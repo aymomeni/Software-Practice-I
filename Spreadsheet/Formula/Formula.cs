@@ -22,7 +22,7 @@ namespace SpreadsheetUtilities
     public class Formula
     {
         // the string array tokens holds all of the tokens for the formula class's methods to use
-        ArrayList tokens = new ArrayList();
+        List<String> tokens = new List<String>();
 
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
@@ -113,7 +113,7 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// A Lookup function is one that maps some strings to double values.  Given a string,
         /// such a function can either return a double (meaning that the string maps to the
-        /// double) or throw an IllegalArgumentException (meaning that the string is unmapped.
+        /// double) or throw an ArgumentException (meaning that the string is unmapped.
         /// Exactly how a Lookup function decides which strings map to doubles and which
         /// don't is up to the implementation of that function.
         /// </summary>
@@ -174,6 +174,7 @@ namespace SpreadsheetUtilities
             }
             return false;
         }
+
 
 
         /// <summary>
