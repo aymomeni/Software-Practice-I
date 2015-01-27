@@ -80,13 +80,13 @@ namespace SpreadsheetUtilities
                     // checking token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis
                     if(lastToken.Equals("(") | lastToken.Equals("+") | lastToken.Equals("-") | lastToken.Equals("*") | lastToken.Equals("/")){
                         if(s.Equals("(") | isVariable(s) | isValidNumericalValue(s)){ }
-                        else throw new FormulaEvaluationException("A Token that immediately followed an opening parenthesis or an operator was not a number, a variable, or an opening parenthesis");
+                        else throw new FormulaFormatException("A Token that immediately followed an opening parenthesis or an operator was not a number, a variable, or an opening parenthesis");
                     }
 
                     // checking token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis
                     if(isValidNumericalValue(lastToken) | isVariable(lastToken) | lastToken.Equals(")")){
                         if(s.Equals("+") | s.Equals("-") | s.Equals("*") | s.Equals("/") | s.Equals(")")){ }
-                        else throw new FormulaEvaluationException("A Token that immediately followed a number, a variable, or a closing parenthesis was not an operator or a closing parenthesis");
+                        else throw new FormulaFormatException("A Token that immediately followed a number, a variable, or a closing parenthesis was not an operator or a closing parenthesis");
                     }
                     
                     tokens.Add(s);
@@ -105,7 +105,7 @@ namespace SpreadsheetUtilities
 
             // the last token of an expression must be a number, a variable, or a closing parenthesis.
             if(isValidNumericalValue(lastToken) | isVariable(lastToken) | lastToken.Equals(")")){}
-             else throw new FormulaEvaluationException("The last token of the expression was not a number, variable, or a closing parenthesis");
+            else throw new FormulaFormatException("The last token of the expression was not a number, variable, or a closing parenthesis");
         }
 
 
@@ -175,7 +175,48 @@ namespace SpreadsheetUtilities
             return false;
         }
 
+        /// <summary>
+        /// This is a helper method that performs arithmetic addition and subtraction
+        /// </summary>
+        /// <param name="x"> left operand </param> 
+        /// <param name="y"> right operand </param> 
+        /// <param name="operation"> char that represents a - or + operation </param>
+        /// <returns></returns>
+        private static int additionAndSubtraction(int x, int y, string operation)
+        {
+            if (operation.Equals('+'))
+            {
+                x += y;
+            }
+            else if (operation.Equals('-'))
+            {
+                x -= y;
+            }
+            return x;
+        }
 
+
+        /// <summary>
+        /// This is a helper method that performs arithmetic multiplication and division
+        /// </summary>
+        /// <param name="x"> left operand </param>
+        /// <param name="y"> right operand </param>
+        /// <param name="operation"> arithmetic operation * or / </param>
+        /// <returns></returns>
+        private static int multiplicationAndDivision(int x, int y, string operation)
+        {
+            if (operation.Equals('/'))
+            {
+                if (y == 0)
+                    throw new ArgumentException("Division by 0 is unsupported.");
+
+                x = x / y;
+            }
+            else if (operation.Equals('*'))
+                x = x * y;
+
+            return x;
+        }
 
         /// <summary>
         /// Given a formula, enumerates the tokens that compose it.  Tokens are left paren,
