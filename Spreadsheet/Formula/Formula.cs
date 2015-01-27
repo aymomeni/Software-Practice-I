@@ -59,15 +59,15 @@ namespace SpreadsheetUtilities
 
                 // Removing empty spaces (including repetitive spaces) in the string array
                 s.Trim();
-                if (s == "" || s == " ")
+                if (s.Equals("") || s.Equals(" "))
                     continue;
                 
                 // checking if the token is valid
-                if (s.Equals("+") | s.Equals("-") | s.Equals("*") | s.Equals("/") | s.Equals("(") | s.Equals(")") | isVariable(s) | isValidNumericalValue(s))
+                if (s.Equals("+") || s.Equals("-") || s.Equals("*") || s.Equals("/") || s.Equals("(") || s.Equals(")") || isVariable(s) || isValidNumericalValue(s))
                 {
                     //checking if the first element is a number, a variable, or an opening parenthesis.
                     if(firstElement == true){
-                        if(s.Equals(isValidNumericalValue(s)) | isVariable(s) | s.Equals("(")){
+                        if(isValidNumericalValue(s) || isVariable(s) || s.Equals("(")){
                             firstElement = false; 
                         } else { throw new FormulaFormatException("The first element was not a number, a variable, or an opening parenthesis"); }
                     }
@@ -86,6 +86,7 @@ namespace SpreadsheetUtilities
                     // checking token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis
                     if(isValidNumericalValue(lastToken) | isVariable(lastToken) | lastToken.Equals(")")){
                         if(s.Equals("+") | s.Equals("-") | s.Equals("*") | s.Equals("/") | s.Equals(")")){ }
+                        else if (lastToken.Equals("")) { }
                         else throw new FormulaFormatException("A Token that immediately followed a number, a variable, or a closing parenthesis was not an operator or a closing parenthesis");
                     }
                     
@@ -119,6 +120,8 @@ namespace SpreadsheetUtilities
         /// </summary>
         public delegate double Lookup(string s);
 
+        
+        
         /// <summary>
         /// Evaluates this Formula, using lookup to determine the values of variables.  
         /// 
@@ -128,11 +131,206 @@ namespace SpreadsheetUtilities
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
-            Stack<String> Operator = new Stack<string>();
-            Stack<String> Value = new Stack<string>();
-            
-            
-            return 0;
+            Stack<String> OperatorStack = new Stack<string>();
+            Stack<double> ValueStack = new Stack<double>();
+
+            foreach (String s in tokens)
+            {
+                // disregarding empty spaces
+                s.Trim();
+                if (s.Equals("") || s.Equals(" "))
+                {
+                    continue;
+                }
+
+                //if t is an double         
+                double numericalValue = 0.0;
+                // checking if t is an integer
+                if (double.TryParse(s, out numericalValue))
+                {
+
+                    if (OperatorStack.Count != 0)
+                    {
+
+                        // If * or / is at the top of the operator stack, pop the value stack,
+                        // pop the operator stack, and apply the popped operator to t and the popped number.
+                        if (OperatorStack.Peek().Equals("/") || OperatorStack.Peek().Equals("*"))
+                        {
+                            if (ValueStack.Count == 0) // Possible Errors: If the value stack is empty a division by zero results
+                                throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
+
+                            // Push the result onto the value stack
+                            double result = multiplicationAndDivision(ValueStack.Pop(), numericalValue, OperatorStack.Pop());
+                            ValueStack.Push(result);
+                            continue;
+                        }
+                    }
+                    ValueStack.Push(numericalValue);
+                }
+
+                // if t is a variable
+                // Proceeding as above, using the look-up value of t instead of t
+                else if (isVariable(s)) // This needs to find variables
+                {
+                    
+                    try
+                    {
+                        double variableValue = lookup(s); // use the delegate to look up the value of the variable
+                        
+                        // Possible Errors: if looking up t reveals it has no value or if the value stack is empty
+                        if (variableValue == null)
+                        {
+                            throw new ArgumentException("There was no value allocated for the given variable.");
+                        }
+                    
+
+                    
+
+                    if (OperatorStack.Count != 0)
+                    {
+                        if ((OperatorStack.Peek().Equals("/") || (OperatorStack.Peek().Equals("*"))))
+                        {
+                            if (ValueStack.Count == 0)
+                            {
+                                throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
+                            }
+
+                            double leftOperand = ValueStack.Pop();
+
+                            double result = multiplicationAndDivision(leftOperand, variableValue, OperatorStack.Pop());
+                            ValueStack.Push(result);
+                            continue;
+                        }
+                    }
+                    ValueStack.Push(variableValue);
+                    }
+                    catch (Exception) { throw new FormulaEvaluationException("The input Argument using lookup did not have a valid value"); }
+                }
+
+
+                else if (s.Equals("+") || s.Equals("-"))
+                {
+                    if (OperatorStack.Count != 0)
+                    {
+                        // If + or - is at the top of the operator stack, pop the value stack twice 
+                        // and the operator stack once. Apply the popped operator to the popped numbers. 
+                        if (OperatorStack.Peek().Equals("+") || OperatorStack.Peek().Equals("-"))
+                        {
+                            // Possible Errors: The value stack contains fever than 2 values
+                            if (ValueStack.Count < 2)
+                            {
+                                throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
+                            }
+                            // Push the result onto the value stack.
+                            double rightOperand = ValueStack.Pop();
+                            double leftOperand = ValueStack.Pop();
+
+                            double result = additionAndSubtraction(leftOperand, rightOperand, OperatorStack.Pop());
+                            ValueStack.Push(result);
+
+                        }
+                    }
+
+                    // Next, push t onto the operator stack
+                    OperatorStack.Push(s);
+                }
+
+                // t is * or /
+                // Push t onto the operator stack
+                else if (s.Equals("/") || s.Equals("*"))
+                    OperatorStack.Push(s);
+
+
+                // t is left parenthesis "("
+                // push t onto the operator stack
+                else if (s.Equals("("))
+                    OperatorStack.Push(s);
+
+                // if t is right parenthesis ")"
+                // Apply the popped operator to the popped numbers. Push the result onto the value stack.
+                else if (s.Equals(")"))
+                {
+                    // If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                    if (OperatorStack.Count != 0)
+                    {
+                        if (OperatorStack.Peek().Equals("+") || OperatorStack.Peek().Equals("-"))
+                        {
+                            if (ValueStack.Count < 2)
+                            {
+                                throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
+                            }
+                            
+                            double rightOperand = ValueStack.Pop();
+                            double leftOperand = ValueStack.Pop();
+                            double result = additionAndSubtraction(leftOperand, rightOperand, OperatorStack.Pop());
+                            ValueStack.Push(result);
+
+                            // Next, the top of the operator stack should be a (. Pop it.
+                            if (OperatorStack.Count != 0)
+                            {
+                                if (!OperatorStack.Peek().Equals("("))
+                                {
+                                    throw new FormulaEvaluationException("You are missing matching parenthisis in your expression.");
+                                }
+                                else
+                                {
+                                    String rightParenthisis = OperatorStack.Pop();
+                                }
+                            }
+                            else
+                                throw new FormulaEvaluationException("You are missing matching parenthisis in your expression.");
+                        }
+                    }
+
+                    if (OperatorStack.Count != 0)
+                    {
+                        // If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                        if (OperatorStack.Peek().Equals("*") || OperatorStack.Peek().Equals("/"))
+                        {
+                            if (ValueStack.Count < 2)
+                            {
+                                throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
+                            }
+                            double right = ValueStack.Pop();
+                            double left = ValueStack.Pop();
+                            double result2 = multiplicationAndDivision(left, right, OperatorStack.Pop());
+                            ValueStack.Push(result2);
+                        }
+                    }
+                }     
+            }
+
+            // when only a value is left on the stack we return it as our expression solution
+            if (OperatorStack.Count == 0)
+            {
+                if (!(ValueStack.Count == 1))
+                {
+                    throw new FormulaEvaluationException("You entered an incorrect expression.");
+                }
+                return ValueStack.Pop();
+            }
+
+            else if (OperatorStack.Count != 0 && OperatorStack.Count == 1)
+            {
+
+                if (OperatorStack.Peek().Equals("+") || OperatorStack.Peek().Equals("-"))
+                {
+                    if (!(ValueStack.Count == 2))
+                    {
+                        throw new FormulaEvaluationException("There are an incorrect number of operands in your expression.");
+                    }
+
+                    double right = ValueStack.Pop(); // operand layout for the addition method
+                    double left = ValueStack.Pop();
+
+                    double result = additionAndSubtraction(left, right, OperatorStack.Pop());
+                    return result;
+                }
+
+            }
+            else throw new FormulaEvaluationException("There were an incorrect number of operators in your expression.");
+
+            return ValueStack.Pop();
         }
 
         /// <summary>
@@ -141,14 +339,6 @@ namespace SpreadsheetUtilities
         /// <returns>True if it is a valid numerical value</returns>
         private Boolean isValidNumericalValue(string numericalValue)
         {
-            //if numericalValue is an integer          
-            int intValue = 0;
-            // checking if t is an integer
-            if (int.TryParse(numericalValue, out intValue))
-            {
-                return true;
-            }
-
             //if numericalValue is a double
             double doubleValue = 0;
             // checking if t is a double
@@ -159,6 +349,7 @@ namespace SpreadsheetUtilities
 
             return false;
         }
+
 
         /// <summary>
         /// Checks if the input string is a variable
@@ -175,20 +366,21 @@ namespace SpreadsheetUtilities
             return false;
         }
 
+
         /// <summary>
         /// This is a helper method that performs arithmetic addition and subtraction
         /// </summary>
         /// <param name="x"> left operand </param> 
         /// <param name="y"> right operand </param> 
-        /// <param name="operation"> char that represents a - or + operation </param>
+        /// <param name="operation"> string that represents a - or + operation </param>
         /// <returns></returns>
-        private static int additionAndSubtraction(int x, int y, string operation)
+        private static double additionAndSubtraction(double x, double y, string operation)
         {
-            if (operation.Equals('+'))
+            if (operation.Equals("+"))
             {
                 x += y;
             }
-            else if (operation.Equals('-'))
+            else if (operation.Equals("-"))
             {
                 x -= y;
             }
@@ -203,20 +395,22 @@ namespace SpreadsheetUtilities
         /// <param name="y"> right operand </param>
         /// <param name="operation"> arithmetic operation * or / </param>
         /// <returns></returns>
-        private static int multiplicationAndDivision(int x, int y, string operation)
+        private static double multiplicationAndDivision(double x, double y, string operation)
         {
-            if (operation.Equals('/'))
+            if (operation.Equals("/"))
             {
                 if (y == 0)
-                    throw new ArgumentException("Division by 0 is unsupported.");
+                    throw new FormulaEvaluationException("Division by 0 is unsupported.");
 
                 x = x / y;
             }
-            else if (operation.Equals('*'))
+            else if (operation.Equals("*"))
                 x = x * y;
 
             return x;
         }
+
+
 
         /// <summary>
         /// Given a formula, enumerates the tokens that compose it.  Tokens are left paren,
