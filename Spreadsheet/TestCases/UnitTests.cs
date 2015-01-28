@@ -66,6 +66,20 @@ namespace TestCases
         }
 
         [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct8()
+        {
+            Formula f = new Formula("-3");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct9()
+        {
+            Formula f = new Formula("2 5 + 3");
+        }
+
+        [TestMethod]
         public void Evaluate1()
         {
             Formula f = new Formula("2+3");

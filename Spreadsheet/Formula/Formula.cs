@@ -90,6 +90,22 @@ namespace SpreadsheetUtilities
                         else throw new FormulaFormatException("A Token that immediately followed a number, a variable, or a closing parenthesis was not an operator or a closing parenthesis");
                     }
                     
+                    // checking if the numerical value is negative
+                    if (isValidNumericalValue(s))
+                    {
+                        //if t is an double         
+                        double numericalValue = 0.0;
+                        // checking if t is an double
+                        if (double.TryParse(s, out numericalValue))
+                        {
+                            if (numericalValue < 0)
+                            {
+                                throw new FormulaFormatException("The numeric value in your formula was negative.");
+                            }
+                        }
+
+                    }
+
                     tokens.Add(s);
                     lastToken = s;
 
@@ -166,14 +182,7 @@ namespace SpreadsheetUtilities
                     
                     try
                     {
-                        double variableValue = lookup(s); // use the delegate to look up the value of the variable
-                        
-                        // Possible Errors: if looking up t reveals it has no value or if the value stack is empty
-                        if (variableValue == null)
-                        {
-                            throw new ArgumentException("There was no value allocated for the given variable.");
-                        }
-                    
+                        double variableValue = lookup(s); // use the delegate to look up the value of the variable                
 
                     if (OperatorStack.Count != 0)
                     {
