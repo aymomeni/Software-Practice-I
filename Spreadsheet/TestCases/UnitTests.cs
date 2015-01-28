@@ -37,6 +37,35 @@ namespace TestCases
         }
 
         [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct4()
+        {
+            Formula f = new Formula(" ");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct5()
+        {
+            Formula f = new Formula(")");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct6()
+        {
+            Formula f = new Formula("(3))");
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Construct7()
+        {
+            Formula f = new Formula("(3)+");
+        }
+
+        [TestMethod]
         public void Evaluate1()
         {
             Formula f = new Formula("2+3");
@@ -77,6 +106,50 @@ namespace TestCases
         {
             Formula f = new Formula("(8/4+2)+3");
             Assert.AreEqual(f.Evaluate(s => 0), 7);
+        }
+
+        [TestMethod]
+        public void Evaluate7()
+        {
+            Formula f = new Formula("((8/4+2)+3)*100");
+            Assert.AreEqual(f.Evaluate(s => 0), 700);
+        }
+
+        [TestMethod]
+        public void Evaluate8()
+        {
+            Formula f = new Formula("(((8/4+2)+3)*100/7)");
+            Assert.AreEqual(f.Evaluate(s => 0), 100);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaEvaluationException))]
+        public void Evaluate9()
+        {
+            Formula f = new Formula("6/0");
+            Assert.AreEqual(f.Evaluate(s => 0), 7);
+        }
+
+
+        [TestMethod]
+        public void Evaluate10()
+        {
+            Formula f = new Formula("(((8/4+2)+3)*2)+8");
+            Assert.AreEqual(f.Evaluate(s => 0), 22);
+        }
+
+        [TestMethod]
+        public void Evaluate11()
+        {
+            Formula f = new Formula("(2)+8");
+            Assert.AreEqual(f.Evaluate(s => 0), 10);
+        }
+
+        [TestMethod]
+        public void Evaluate12()
+        {
+            Formula f = new Formula("((2+8)+2)*8");
+            Assert.AreEqual(f.Evaluate(s => 0), 96);
         }
     }
 }

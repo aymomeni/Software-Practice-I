@@ -135,17 +135,11 @@ namespace SpreadsheetUtilities
             Stack<double> ValueStack = new Stack<double>();
 
             foreach (String s in tokens)
-            {
-                // disregarding empty spaces
-                s.Trim();
-                if (s.Equals("") || s.Equals(" "))
-                {
-                    continue;
-                }
+            {            
 
                 //if t is an double         
                 double numericalValue = 0.0;
-                // checking if t is an integer
+                // checking if t is an double
                 if (double.TryParse(s, out numericalValue))
                 {
 
@@ -182,8 +176,6 @@ namespace SpreadsheetUtilities
                         {
                             throw new ArgumentException("There was no value allocated for the given variable.");
                         }
-                    
-
                     
 
                     if (OperatorStack.Count != 0)
@@ -255,42 +247,24 @@ namespace SpreadsheetUtilities
                     {
                         if (OperatorStack.Peek().Equals("+") || OperatorStack.Peek().Equals("-"))
                         {
-                            if (ValueStack.Count < 2)
-                            {
-                                throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
-                            }
-                            
                             double rightOperand = ValueStack.Pop();
                             double leftOperand = ValueStack.Pop();
                             double result = additionAndSubtraction(leftOperand, rightOperand, OperatorStack.Pop());
                             ValueStack.Push(result);
 
-                            // Next, the top of the operator stack should be a (. Pop it.
-                            if (OperatorStack.Count != 0)
-                            {
-                                if (!OperatorStack.Peek().Equals("("))
-                                {
-                                    throw new FormulaEvaluationException("You are missing matching parenthisis in your expression.");
-                                }
-                                else
-                                {
-                                    String rightParenthisis = OperatorStack.Pop();
-                                }
-                            }
-                            else
-                                throw new FormulaEvaluationException("You are missing matching parenthisis in your expression.");
                         }
                     }
 
+                    // Whether or not you did the first step, the top of the operator stack should be a (. Pop it.
+                    OperatorStack.Pop();
+
+                    // If * or / is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+                    // Apply the popped operator to the popped numbers. Push the result onto the value stack.
                     if (OperatorStack.Count != 0)
                     {
-                        // If + or - is at the top of the operator stack, pop the value stack twice and the operator stack once. 
+ 
                         if (OperatorStack.Peek().Equals("*") || OperatorStack.Peek().Equals("/"))
                         {
-                            if (ValueStack.Count < 2)
-                            {
-                                throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
-                            }
                             double right = ValueStack.Pop();
                             double left = ValueStack.Pop();
                             double result2 = multiplicationAndDivision(left, right, OperatorStack.Pop());
@@ -303,32 +277,24 @@ namespace SpreadsheetUtilities
             // when only a value is left on the stack we return it as our expression solution
             if (OperatorStack.Count == 0)
             {
-                if (!(ValueStack.Count == 1))
-                {
-                    throw new FormulaEvaluationException("You entered an incorrect expression.");
-                }
+                // Value stack should contain a single number.  Pop it and report as the value of the expression
                 return ValueStack.Pop();
             }
 
-            else if (OperatorStack.Count != 0 && OperatorStack.Count == 1)
+            else
             {
-
+                // There should be exactly one operator on the operator stack, and it should be either + or -. 
+                // There should be exactly two values on the value stack. Apply the operator to the two values and 
+                // report the result as the value of the expression.
                 if (OperatorStack.Peek().Equals("+") || OperatorStack.Peek().Equals("-"))
                 {
-                    if (!(ValueStack.Count == 2))
-                    {
-                        throw new FormulaEvaluationException("There are an incorrect number of operands in your expression.");
-                    }
-
                     double right = ValueStack.Pop(); // operand layout for the addition method
                     double left = ValueStack.Pop();
-
                     double result = additionAndSubtraction(left, right, OperatorStack.Pop());
                     return result;
                 }
 
             }
-            else throw new FormulaEvaluationException("There were an incorrect number of operators in your expression.");
 
             return ValueStack.Pop();
         }
