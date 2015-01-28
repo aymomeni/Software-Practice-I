@@ -150,9 +150,6 @@ namespace SpreadsheetUtilities
                         // pop the operator stack, and apply the popped operator to t and the popped number.
                         if (OperatorStack.Peek().Equals("/") || OperatorStack.Peek().Equals("*"))
                         {
-                            if (ValueStack.Count == 0) // Possible Errors: If the value stack is empty a division by zero results
-                                throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
-
                             // Push the result onto the value stack
                             double result = multiplicationAndDivision(ValueStack.Pop(), numericalValue, OperatorStack.Pop());
                             ValueStack.Push(result);

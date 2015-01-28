@@ -151,5 +151,13 @@ namespace TestCases
             Formula f = new Formula("((2+8)+2)*8");
             Assert.AreEqual(f.Evaluate(s => 0), 96);
         }
+
+
+        [TestMethod]
+        public void Evaluate13()
+        {
+            Formula f = new Formula("((x2)+2)*8");
+            Assert.AreEqual(f.Evaluate(s => 2), 32);
+        }
     }
 }
