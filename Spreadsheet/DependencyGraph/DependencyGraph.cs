@@ -1,6 +1,8 @@
 ﻿// Skeleton implementation written by Joe Zachary for CS 3500, January 2015.
 // Version 1.1 (1/28/15 7:00 p.m.): Changed name of namespace
-
+/*
+ * Ali Momeni - CS 3500 - Assignment 3 - February 1, 2015
+ */
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +29,7 @@ namespace Dependencies
     /// For example, suppose DG = {("a", "b"), ("a", "c"), ("b", "d"), ("d", "d")}
     ///     dependents("a") = {"b", "c"}
     ///     dependents("b") = {"d"}
-    ///     dependents("c") = {}
+    ///     dependents("c") = {}k
     ///     dependents("d") = {"d"}
     ///     dependees("a") = {}
     ///     dependees("b") = {"a"}
@@ -41,11 +43,24 @@ namespace Dependencies
     /// </summary>
     public class DependencyGraph
     {
+        // Creating two dictionaries that hold the relationships between dependents and dependees
+        // dependents holds as values all of the dependents of the key string and dependees does the exact opposite
+
+        private Dictionary<String, HashSet<String>> Dependents; // IMPORTANT: dependents' key is the dependee and the value is a Hashset of dependents for that key      
+        private Dictionary<String, HashSet<String>> Dependees; // IMPORTANT: dependeees' key is the dependent and the value is a Hashset of dependees for that key
+        
+        // The size variable is dedicated to keep track of all the dependencies
+        private int size;
+
         /// <summary>
         /// Creates a DependencyGraph containing no dependencies.
         /// </summary>
         public DependencyGraph()
         {
+            // initiating the the dictionaries, and size for use
+            Dependents = new Dictionary<string, HashSet<string>>();
+            Dependees = new Dictionary<string, HashSet<string>>();
+            size = 0;
         }
 
         /// <summary>
@@ -53,7 +68,7 @@ namespace Dependencies
         /// </summary>
         public int Size
         {
-            get { return 0; }
+            get { return this.size; }
         }
 
         /// <summary>
@@ -61,7 +76,8 @@ namespace Dependencies
         /// </summary>
         public bool HasDependents(string s)
         {
-            return false;
+            // checking if the key s exists in the dictionary
+            return Dependents.ContainsKey(s);
         }
 
         /// <summary>
@@ -69,7 +85,8 @@ namespace Dependencies
         /// </summary>
         public bool HasDependees(string s)
         {
-            return false;
+            // checking if the key s exists in dictionary dependees
+            return Dependees.ContainsKey(s);
         }
 
         /// <summary>
@@ -77,7 +94,16 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            return null;
+            HashSet<String> dependents = new HashSet<String>();
+
+            if (Dependents.ContainsKey(s))
+            {
+                if (Dependents.TryGetValue(s, out dependents))
+                {
+                    return dependents; 
+                }
+            }
+            return dependents;
         }
 
         /// <summary>
@@ -85,7 +111,16 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            return null;
+            HashSet<String> dependees = new HashSet<String>();
+
+            if (Dependents.ContainsKey(s))
+            {
+                if (Dependents.TryGetValue(s, out dependees))
+                {
+                    return dependees;
+                }
+            }
+            return dependees;
         }
 
         /// <summary>
