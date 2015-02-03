@@ -22,7 +22,7 @@ namespace SpreadsheetUtilities
     public class Formula
     {
         // the string array tokens holds all of the tokens for the formula class's methods to use
-        List<String> tokens = new List<String>();
+        private List<String> tokens = new List<String>();
 
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
