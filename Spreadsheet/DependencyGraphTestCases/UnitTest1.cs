@@ -93,7 +93,8 @@ namespace DependencyGraphTestCases
         public void SimpleTest8()
         {
             DependencyGraph dg = new DependencyGraph();
-            dg.RemoveDependency("m", "b");
+            dg.AddDependency("m", "b");
+            dg.AddDependency("m", "c");
             Assert.IsFalse(dg.HasDependees("m"));
         }
 
