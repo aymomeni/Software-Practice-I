@@ -68,7 +68,7 @@ namespace Dependencies
         /// </summary>
         public int Size
         {
-            get { return this.size; }
+            get { return size; }
         }
 
         /// <summary>
@@ -76,8 +76,21 @@ namespace Dependencies
         /// </summary>
         public bool HasDependents(string s)
         {
-            // checking if the key s exists in the dictionary
-            return Dependents.ContainsKey(s);
+            // check if elements exist in dependents
+            if (Dependents.Count == 0)
+            {
+                return false;
+            }
+            // if elements exist we want to see if dependent s
+            if (Dependents.ContainsKey(s))
+            {
+                HashSet<string> tempDependents = new HashSet<string>();
+                if (Dependents.TryGetValue(s, out tempDependents))
+                {
+                    return (tempDependents.Count > 0); // return the number of elements contained in s if there exists a dependees of "s"
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -85,8 +98,21 @@ namespace Dependencies
         /// </summary>
         public bool HasDependees(string s)
         {
-            // checking if the key s exists in dictionary dependees
-            return Dependees.ContainsKey(s);
+            // check if elements exist in dependees hashset
+            if (Dependees.Count == 0)
+            {
+                return false;
+            }
+            // if elements exist we want to see if dependee has any dependents s
+            if (Dependees.ContainsKey(s))
+            {
+                HashSet<string> tempDependees = new HashSet<string>();
+                if (Dependees.TryGetValue(s, out tempDependees))
+                {
+                    return (tempDependees.Count > 0); // return true if hashset value of "s", which is a dependent, contains any values
+                }
+            }
+            return false; // return false if no dependees exist for "s"
         }
 
         /// <summary>
@@ -94,16 +120,17 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            HashSet<String> dependents = new HashSet<String>();
+            // in case we have no elements to return, an empty hashset is returned
+            HashSet<string> empty = new HashSet<string>();
 
+            //checking if key s exists in dependents
             if (Dependents.ContainsKey(s))
             {
-                if (Dependents.TryGetValue(s, out dependents))
-                {
-                    return dependents; 
-                }
+                // returning a hashset that is part of collections and IEnumerable
+                return new HashSet<string>(Dependents[s]);
             }
-            return dependents;
+
+            return empty;
         }
 
         /// <summary>
@@ -111,16 +138,16 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            HashSet<String> dependees = new HashSet<String>();
-
-            if (Dependents.ContainsKey(s))
+            // in case we have no elements to return, an empty hashset is returned
+            HashSet<string> empty = new HashSet<string>();
+            //checking if key s exists in dependents
+            if (Dependees.ContainsKey(s))
             {
-                if (Dependents.TryGetValue(s, out dependees))
-                {
-                    return dependees;
-                }
+                // returning a hashset that is part of collections and IEnumerable
+                return new HashSet<string>(Dependees[s]);
             }
-            return dependees;
+
+            return empty;
         }
 
         /// <summary>
@@ -129,6 +156,57 @@ namespace Dependencies
         /// </summary>
         public void AddDependency(string s, string t)
         {
+            // both dependee dictionary and dependent dictionary have to add (s,t) if they don't exist yet.
+
+            // check if s is contained in dependent dictionary      
+            if (!Dependents.ContainsKey(s))
+            {
+                // if s is not contained insert s->t pair
+                HashSet<string> temp = new HashSet<string>();
+                temp.Add(t);
+                Dependents.Add(s, temp); // insert s->t into dependent dictionary 
+                size++;
+            }
+            else if (Dependents.ContainsKey(s))
+            {
+                // if s is contained we need to check if t exists
+                HashSet<string> tempDependents = new HashSet<string>();
+                if (Dependents.TryGetValue(s, out tempDependents))
+                {
+                    if (!tempDependents.Contains(t)) // check if t is contained in key s
+                    {
+                        tempDependents.Add(t);
+                        Dependents.Remove(s); // first remove the previous value pair since duplicates are not allowed
+                        Dependents.Add(s, tempDependents); // insert s->t into dependent dictionary
+                        size++;
+                    }
+                }
+            }
+
+            // check if t is contained in dependee dictionary
+            if (!Dependees.ContainsKey(t))
+            {
+                // if t is not contained insert s->t pair
+                HashSet<string> temp = new HashSet<string>();
+                temp.Add(s);
+                Dependees.Add(t, temp);
+
+            }
+            // check if dependees already has key t 
+            else if (Dependees.ContainsKey(t))
+            {
+                HashSet<String> tempDependee = new HashSet<string>();
+                if (Dependees.TryGetValue(t, out tempDependee))
+                {
+                    if (!tempDependee.Contains(s))
+                    {
+                        tempDependee.Add(s);
+                        Dependees.Remove(t); // first remove the privious value pair since duplicates are not allowed
+                        Dependees.Add(t, tempDependee); // insert the new value pair and maintain the old dependee hashset              
+                    }
+                }
+            }
+            return;
         }
 
         /// <summary>
@@ -137,6 +215,47 @@ namespace Dependencies
         /// </summary>
         public void RemoveDependency(string s, string t)
         {
+            // find out if s exists in dependendents
+            if (Dependents.ContainsKey(s))
+            {
+                // if yes we need to find t, its dependent and remove it and decrement the size
+                HashSet<String> tempDependents;
+                if (Dependents.TryGetValue(s, out tempDependents))
+                {
+                    if (tempDependents.Contains(t))
+                    {
+                        tempDependents.Remove(t);
+                        size--;
+                    }
+
+                    // in case our key location holds an empty value hashset
+                    if (tempDependents.Count == 0)
+                    {
+                        Dependents.Remove(s);
+                    }
+                }
+            }
+
+            // check if the dependent t exists if yes we want to remove s from the hashset of dependees
+            if (Dependees.ContainsKey(t))
+            {
+                HashSet<String> tempDependee;
+                if (Dependees.TryGetValue(t, out tempDependee))
+                {
+                    if (tempDependee.Contains(s))
+                    {
+                        tempDependee.Remove(s);
+                        //orderedPairSize++;
+                    }
+
+                    // in clase our key location holds an empty value hashset
+                    if (tempDependee.Count == 0)
+                    {
+                        Dependees.Remove(t);
+                    }
+                }
+            }
+            return;
         }
 
         /// <summary>
@@ -145,6 +264,18 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+            // using the classes method GetDependents and iterating
+            // throough the IEnumerable that it returns to delete all of the dependencies
+            foreach (String r in this.GetDependents(s))
+            {
+                RemoveDependency(s, r);
+            }
+            // we then go through the IEnumerable newDependents and add
+            // each new dependent to our key s (dependee)
+            foreach (String tempS in newDependents)
+            {
+                AddDependency(s, tempS);
+            }
         }
 
         /// <summary>
@@ -153,6 +284,18 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees)
         {
+            // using the classes method GetDependees and iterating
+            // through the IEnumerable that it returns to delete all of the dependees from r
+            foreach (String r in this.GetDependees(s))
+            {
+                RemoveDependency(r, s);
+            }
+            // we then go through the IEnumerable newDependents and add
+            // each new dependeee using our addDependency method
+            foreach (String tempS in newDependees)
+            {
+                AddDependency(tempS, s);
+            }
         }
     }
 }
