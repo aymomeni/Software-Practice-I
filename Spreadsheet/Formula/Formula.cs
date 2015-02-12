@@ -84,7 +84,7 @@ namespace Formulas
 
                 // checking if the token is valid
                 if (s.Equals("+") || s.Equals("-") || s.Equals("*") || s.Equals("/") || s.Equals("(") || s.Equals(")") || isVariable(s) || isValidNumericalValue(s))
-                {       
+                {
                     //checking if the first element is a number, a variable, or an opening parenthesis.
                     if (firstElement == true)
                     {
@@ -131,17 +131,17 @@ namespace Formulas
                     }
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    ////////////////////////////// CENTRAL DELEGATE PROCESSING/////////////////////////////////////////
+                    ////////////////////////////// MAIN DELEGATE PROCESSING START//////////////////////////////////////
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
                     // Checking for validity of variables right before we add the variable to tokens
                     // Normalizing and checking for validity of Variables
                     if (isVariable(s))
                     {
-                       // If f is syntactically correct but contains a variable v such that N(v) is 
-                       // not a legal variable according to point #3 above, the constructor should throw a FormulaFormatException with an explanatory message
+                        // If f is syntactically correct but contains a variable v such that N(v) is 
+                        // not a legal variable according to point #3 above, the constructor should throw a FormulaFormatException with an explanatory message
                         normalizeValidateStringHelper = N(s);
-                        if(!isVariable(normalizeValidateStringHelper))
+                        if (!isVariable(normalizeValidateStringHelper))
                         {
                             throw new FormulaFormatException("After the normalization of a variabe, it conflicted with the general definition of variables.");
                         }
@@ -153,11 +153,14 @@ namespace Formulas
                         }
 
                         // adding the normalized and varified variable to our tokens
-                        tokens.Add(normalizeValidateStringHelper);
-                        lastToken = normalizeValidateStringHelper;
-
+                        tokens.Add(s);
+                        lastToken = s;
                         continue;
                     }
+
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////// MAIN DELEGATE PROCESSING END ///////////////////////////////////////
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
 
                     tokens.Add(s);
                     lastToken = s;
@@ -197,101 +200,13 @@ namespace Formulas
         /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
         /// explanatory Message.
         /// </summary>
-        public Formula(String formula)
+        public Formula(String formula) : 
+            this (formula, s => s, s => true)
         {
-
-            // running the formula string through the getTokens method
-            IEnumerable<string>tempTokens = GetTokens(formula);
-
-
-            // parenthesis counters
-            int leftParenthesis = 0;
-            int rightParenthesis = 0;
-
-            // first element boolean that helps check if the first element is valid
-            bool firstElement = true;
-
-            // string that represents the last token added
-            string lastToken = "";
-
-
-            // varify that there aren't any invalid tokens
-            foreach(string s in tempTokens){
-
-                // Removing empty spaces (including repetitive spaces) in the string array
-                s.Trim();
-                if (s.Equals("") || s.Equals(" "))
-                    continue;
-                
-                // checking if the token is valid
-                if (s.Equals("+") || s.Equals("-") || s.Equals("*") || s.Equals("/") || s.Equals("(") || s.Equals(")") || isVariable(s) || isValidNumericalValue(s))
-                {
-                    //checking if the first element is a number, a variable, or an opening parenthesis.
-                    if(firstElement == true){
-                        if(isValidNumericalValue(s) || isVariable(s) || s.Equals("(")){
-                            firstElement = false; 
-                        } else { throw new FormulaFormatException("The first element was not a number, a variable, or an opening parenthesis"); }
-                    }
-
-                    // keeping track of the parenthesis count
-                    if (s.Equals("(")) { leftParenthesis++; } 
-                    if (s.Equals(")")) { rightParenthesis++; }
-                    if (rightParenthesis > leftParenthesis) { throw new FormulaFormatException("There were more closing parenthesis then opening parenthesis"); }
-
-                    // checking token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis
-                    if(lastToken.Equals("(") | lastToken.Equals("+") | lastToken.Equals("-") | lastToken.Equals("*") | lastToken.Equals("/")){
-                        if(s.Equals("(") | isVariable(s) | isValidNumericalValue(s)){ }
-                        else throw new FormulaFormatException("A Token that immediately followed an opening parenthesis or an operator was not a number, a variable, or an opening parenthesis");
-                    }
-
-                    // checking token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis
-                    if(isValidNumericalValue(lastToken) | isVariable(lastToken) | lastToken.Equals(")")){
-                        if(s.Equals("+") | s.Equals("-") | s.Equals("*") | s.Equals("/") | s.Equals(")")){ }
-                        else if (lastToken.Equals("")) { }
-                        else throw new FormulaFormatException("A Token that immediately followed a number, a variable, or a closing parenthesis was not an operator or a closing parenthesis");
-                    }
-                    
-                    // checking if the numerical value is negative
-                    if (isValidNumericalValue(s))
-                    {
-                        //if t is an double         
-                        double numericalValue = 0.0;
-                        // checking if t is an double
-                        if (double.TryParse(s, out numericalValue))
-                        {
-                            if (numericalValue < 0)
-                            {
-                                throw new FormulaFormatException("The numeric value in your formula was negative.");
-                            }
-                        }
-
-                    }
-
-                    tokens.Add(s);
-                    lastToken = s;
-
-                    continue;
-                }
-                else { throw new FormulaFormatException("Invalid token was used."); } // if s is is invalid we throw an exception with an explanatory message
-            }
-
-            // varifying if there is at least one token
-            if (tokens.Count == 0)
-            {
-                throw new FormulaFormatException("There wasn't at least one token.");
-            }
-
-            // the last token of an expression must be a number, a variable, or a closing parenthesis.
-            if(isValidNumericalValue(lastToken) | isVariable(lastToken) | lastToken.Equals(")")){}
-            else throw new FormulaFormatException("The last token of the expression was not a number, variable, or a closing parenthesis");
-
-            if (rightParenthesis != leftParenthesis)
-            {
-                throw new FormulaFormatException("The number of opening and closing parenthesis did not match up.");
-            }
+            // empty on purpose since the 3 argument constructor can do all the work
         }
 
-        
+
         /// <summary>
         /// Evaluates this Formula, using lookup to determine the values of variables.  
         /// 
@@ -301,11 +216,12 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
-            Stack<String> OperatorStack = new Stack<string>();
-            Stack<double> ValueStack = new Stack<double>();
+            String normalizeHelper = ""; // string that helps us normalize values during iteratation (since we can't change values inside the loop)
+            Stack<String> OperatorStack = new Stack<string>(); // Stack that holds our operators during evaluation
+            Stack<double> ValueStack = new Stack<double>(); // Stack that holds our values during evaluation
 
             foreach (String s in tokens)
-            {            
+            {
 
                 //if t is an double         
                 double numericalValue = 0.0;
@@ -333,28 +249,29 @@ namespace Formulas
                 // Proceeding as above, using the look-up value of t instead of t
                 else if (isVariable(s)) // This needs to find variables
                 {
-                    
+
                     try
                     {
+                        //normalizeHelper = N(s);
                         double variableValue = lookup(s); // use the delegate to look up the value of the variable                
 
-                    if (OperatorStack.Count != 0)
-                    {
-                        if ((OperatorStack.Peek().Equals("/") || (OperatorStack.Peek().Equals("*"))))
+                        if (OperatorStack.Count != 0)
                         {
-                            if (ValueStack.Count == 0)
+                            if ((OperatorStack.Peek().Equals("/") || (OperatorStack.Peek().Equals("*"))))
                             {
-                                throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
+                                if (ValueStack.Count == 0)
+                                {
+                                    throw new FormulaEvaluationException("There aren't enough operators to solve the expression.");
+                                }
+
+                                double leftOperand = ValueStack.Pop();
+
+                                double result = multiplicationAndDivision(leftOperand, variableValue, OperatorStack.Pop());
+                                ValueStack.Push(result);
+                                continue;
                             }
-
-                            double leftOperand = ValueStack.Pop();
-
-                            double result = multiplicationAndDivision(leftOperand, variableValue, OperatorStack.Pop());
-                            ValueStack.Push(result);
-                            continue;
                         }
-                    }
-                    ValueStack.Push(variableValue);
+                        ValueStack.Push(variableValue);
                     }
                     catch (Exception) { throw new FormulaEvaluationException("The input Argument using lookup did not have a valid value"); }
                 }
@@ -422,7 +339,7 @@ namespace Formulas
                     // Apply the popped operator to the popped numbers. Push the result onto the value stack.
                     if (OperatorStack.Count != 0)
                     {
- 
+
                         if (OperatorStack.Peek().Equals("*") || OperatorStack.Peek().Equals("/"))
                         {
                             double right = ValueStack.Pop();
@@ -431,7 +348,7 @@ namespace Formulas
                             ValueStack.Push(result2);
                         }
                     }
-                }     
+                }
             }
 
             // when only a value is left on the stack we return it as our expression solution
@@ -453,7 +370,6 @@ namespace Formulas
                     double result = additionAndSubtraction(left, right, OperatorStack.Pop());
                     return result;
                 }
-
             }
 
             return ValueStack.Pop();
@@ -504,7 +420,7 @@ namespace Formulas
         /// <param name="y"> right operand </param> 
         /// <param name="operation"> string that represents a - or + operation </param>
         /// <returns></returns>
-        private static double additionAndSubtraction(double x, double y, string operation)
+        private double additionAndSubtraction(double x, double y, string operation)
         {
             if (operation.Equals("+"))
             {
@@ -525,7 +441,7 @@ namespace Formulas
         /// <param name="y"> right operand </param>
         /// <param name="operation"> arithmetic operation * or / </param>
         /// <returns></returns>
-        private static double multiplicationAndDivision(double x, double y, string operation)
+        private double multiplicationAndDivision(double x, double y, string operation)
         {
             if (operation.Equals("/"))
             {
@@ -571,33 +487,56 @@ namespace Formulas
                 }
             }
         }
-    }
 
-    /// <summary>
-    /// Used to report syntactic errors in the argument to the Formula constructor.
-    /// </summary>
-    public class FormulaFormatException : Exception
-    {
         /// <summary>
-        /// Constructs a FormulaFormatException containing the explanatory message.
+        /// Returns an Enumerable of all the variables (after normalization)
+        /// NOTE: Duplicates are removed
         /// </summary>
-        public FormulaFormatException(String message)
-            : base(message)
+        /// <returns> IEnumerable </returns>
+        public IEnumerable<string> GetVariables()
         {
+            HashSet<string> variables = new HashSet<string>{};
+
+            foreach (string s in tokens)
+            {
+                if (isVariable(s))
+                {
+                    if(!variables.Contains(N(s))){
+                        variables.Add(N(s));
+                    }
+                }
+            }
+            return variables;
         }
     }
 
-    /// <summary>
-    /// Used to report errors that occur when evaluating a Formula.
-    /// </summary>
-    public class FormulaEvaluationException : Exception
-    {
         /// <summary>
-        /// Constructs a FormulaEvaluationException containing the explanatory message.
+        /// Used to report syntactic errors in the argument to the Formula constructor.
         /// </summary>
-        public FormulaEvaluationException(String message)
-            : base(message)
+        public class FormulaFormatException : Exception
         {
+            /// <summary>
+            /// Constructs a FormulaFormatException containing the explanatory message.
+            /// </summary>
+            public FormulaFormatException(String message)
+                : base(message)
+            {
+            }
         }
-    }
+
+        /// <summary>
+        /// Used to report errors that occur when evaluating a Formula.
+        /// </summary>
+        public class FormulaEvaluationException : Exception
+        {
+            /// <summary>
+            /// Constructs a FormulaEvaluationException containing the explanatory message.
+            /// </summary>
+            public FormulaEvaluationException(String message)
+                : base(message)
+            {
+            }
+        }
+  
+
 }
