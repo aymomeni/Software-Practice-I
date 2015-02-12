@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using System.Collections;
 
 
-namespace SpreadsheetUtilities
+namespace Formulas
 {
     /// <summary>
     /// Represents formulas written in standard infix notation using standard precedence
@@ -334,7 +334,7 @@ namespace SpreadsheetUtilities
         /// <returns>True if the input string is a variable, false otherwise</returns>
         private Boolean isVariable(string variable)
         {
-            Regex regex = new Regex(@"^[a-zA-Z]+[0-9]+$"); // any repeated lowercase or uppercase letters with any amout of numbers concatinated
+            Regex regex = new Regex(@"^[a-zA-Z_]([a-zA-Z_\d])*$"); // any repeated lowercase or uppercase letters with any amout of numbers concatinated
             Match match = regex.Match(variable);
             if (match.Success)
             {
