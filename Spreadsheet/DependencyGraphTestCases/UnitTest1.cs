@@ -3,7 +3,7 @@
  */
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SpreadsheetUtilities;
+using Formulas;
 using Dependencies;
 using System.Collections.Generic;
 

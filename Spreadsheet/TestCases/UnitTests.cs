@@ -16,7 +16,6 @@ namespace TestCases
     public class UnitTests
     {
         [TestMethod]
-        [ExpectedException(typeof(FormulaFormatException))]
         public void Construct1()
         {
             Formula f = new Formula("x");
@@ -77,6 +76,18 @@ namespace TestCases
         public void Construct9()
         {
             Formula f = new Formula("2 5 + 3");
+        }
+
+        [TestMethod]
+        public void Construct10()
+        {
+            Formula f = new Formula("_");
+        }
+
+        [TestMethod]
+        public void Construct11()
+        {
+            Formula f = new Formula("_x6872xcv");
         }
 
         [TestMethod]
@@ -276,10 +287,9 @@ namespace TestCases
         }
 
         [TestMethod()]
-        [ExpectedException(typeof(FormulaFormatException))]
         public void Test14()
         {
-            Formula f = new Formula("x");
+            Formula f = new Formula("_x");
         }
 
         [TestMethod()]

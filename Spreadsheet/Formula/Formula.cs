@@ -12,6 +12,16 @@ using System.Collections;
 
 namespace Formulas
 {
+
+    /// <summary>
+    /// A Lookup function is one that maps some strings to double values.  Given a string,
+    /// such a function can either return a double (meaning that the string maps to the
+    /// double) or throw an ArgumentException (meaning that the string is unmapped.
+    /// Exactly how a Lookup function decides which strings map to doubles and which
+    /// don't is up to the implementation of that function.
+    /// </summary>
+    public delegate double Lookup(string s);
+
     /// <summary>
     /// Represents formulas written in standard infix notation using standard precedence
     /// rules.  Provides a means to evaluate Formulas.  Formulas can be composed of
@@ -130,18 +140,6 @@ namespace Formulas
             }
         }
 
-
-
-        /// <summary>
-        /// A Lookup function is one that maps some strings to double values.  Given a string,
-        /// such a function can either return a double (meaning that the string maps to the
-        /// double) or throw an ArgumentException (meaning that the string is unmapped.
-        /// Exactly how a Lookup function decides which strings map to doubles and which
-        /// don't is up to the implementation of that function.
-        /// </summary>
-        public delegate double Lookup(string s);
-
-        
         
         /// <summary>
         /// Evaluates this Formula, using lookup to determine the values of variables.  
@@ -334,7 +332,11 @@ namespace Formulas
         /// <returns>True if the input string is a variable, false otherwise</returns>
         private Boolean isVariable(string variable)
         {
-            Regex regex = new Regex(@"^[a-zA-Z_]([a-zA-Z_\d])*$"); // any repeated lowercase or uppercase letters with any amout of numbers concatinated
+
+            //Currently,  variable is one or more letters followed by one or more digits.  
+            //Change it to be a letter or underscore followed by zero or more letters and/or digits.  
+            //(For example, "x", "_", "x23", "xyz", and "_x12y" are all variables under this new definition
+            Regex regex = new Regex(@"^[a-zA-Z_][a-zA-Z0-9]*$"); // any repeated lowercase or uppercase letters with any amout of numbers concatinated
             Match match = regex.Match(variable);
             if (match.Success)
             {
