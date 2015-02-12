@@ -4,6 +4,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Formulas;
+using System.Collections.Generic;
 
 namespace TestCases
 {
@@ -200,6 +201,72 @@ namespace TestCases
             Assert.AreEqual(1, f.Evaluate(s => 4), 1e-6);
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Evaluate15()
+        {
+            Formula f = new Formula("x5 + .");
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Evaluate16()
+        {
+            Formula f = new Formula("x5", s => s, s => false);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Evaluate17()
+        {
+            Formula f = new Formula("_x_");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Evaluate18()
+        {
+            Formula f = new Formula("_x94562_");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void Evaluate19()
+        {
+            Formula f = new Formula("x5", s => s + "_", s => false);
+        }
+
+        [TestMethod()]
+        public void EvaluateGetVariables1()
+        {
+            Formula f = new Formula("A1-B2/A3*B2+C7+A1+B9-C9");
+            List<string> temp = new List<string>(f.GetVariables());
+            Assert.AreEqual(temp.Count, 6);
+            HashSet<string> comparison = new HashSet<string>() { "A1", "B2", "A3", "C7", "B9", "C9" };
+
+            Assert.IsTrue(comparison.SetEquals(temp));
+        }
+
+        [TestMethod()]
+        public void EvaluateGetVariables2()
+        {
+            Formula f = new Formula("A1+A1+A1");
+            List<string> temp = new List<string>(f.GetVariables());
+            Assert.AreEqual(temp.Count, 1);
+            HashSet<string> comparison = new HashSet<string>() { "A1"};
+            Assert.IsTrue(comparison.SetEquals(temp));
+        }
+
+        [TestMethod()]
+        public void EvaluateGetVariables3()
+        {
+            Formula f = new Formula("a1 + a2 + a3 + a4", s => "_" + s, s => true);
+            List<string> temp = new List<string>(f.GetVariables());
+            Assert.AreEqual(temp.Count, 4);
+            HashSet<string> comparison = new HashSet<string>() { "_a1", "_a2", "_a3", "_a4"};
+            Assert.IsTrue(comparison.SetEquals(temp));
+        }
 
 
         // Added Grading Test cases for debugging

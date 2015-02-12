@@ -252,7 +252,7 @@ namespace Formulas
 
                     try
                     {
-                        //normalizeHelper = N(s);
+                        normalizeHelper = N(s);
                         double variableValue = lookup(s); // use the delegate to look up the value of the variable                
 
                         if (OperatorStack.Count != 0)
