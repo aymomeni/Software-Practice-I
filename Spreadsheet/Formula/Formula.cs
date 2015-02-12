@@ -110,7 +110,7 @@ namespace SpreadsheetUtilities
                     lastToken = s;
 
                     continue;
-                } 
+                }
                 else { throw new FormulaFormatException("Invalid token was used."); } // if s is is invalid we throw an exception with an explanatory message
             }
 
@@ -123,6 +123,11 @@ namespace SpreadsheetUtilities
             // the last token of an expression must be a number, a variable, or a closing parenthesis.
             if(isValidNumericalValue(lastToken) | isVariable(lastToken) | lastToken.Equals(")")){}
             else throw new FormulaFormatException("The last token of the expression was not a number, variable, or a closing parenthesis");
+
+            if (rightParenthesis != leftParenthesis)
+            {
+                throw new FormulaFormatException("The number of opening and closing parenthesis did not match up.");
+            }
         }
 
 
