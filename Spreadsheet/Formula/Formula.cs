@@ -1,6 +1,8 @@
 ﻿// Skeleton written by Joe Zachary for CS 3500, January 2014
 /*
  * Ali Momeni - CS 3500 - Assignment 1 - January 25, 2015
+ * 
+ * UPDATE: PS4 February 11, Added delegates validate and normalize (integrated in the constructor)
  */
 using System;
 using System.Collections.Generic;
