@@ -22,6 +22,8 @@ namespace Formulas
     /// </summary>
     public delegate double Lookup(string s);
 
+
+
     /// <summary>
     /// Represents formulas written in standard infix notation using standard precedence
     /// rules.  Provides a means to evaluate Formulas.  Formulas can be composed of
@@ -33,6 +35,8 @@ namespace Formulas
     {
         // the string array tokens holds all of the tokens for the formula class's methods to use
         private List<String> tokens = new List<String>();
+        private Func<string, string> N; // Normalize delegate
+        private Func<string, bool> V; // Validate delegate
 
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
@@ -41,14 +45,161 @@ namespace Formulas
         /// parentheses, and the four binary operator symbols +, -, *, and /.  White space is
         /// permitted between tokens, but is not required.
         /// 
-        /// An example of a valid parameter to this constructor is "2.5e9 + x5 / 17".
-        /// Examples of invalid parameters are "x", "-5.3", and "2 5 + 3";
+        /// UPDATE PS4 on Valid vairables:  A letter or underscore followed by zero or more letters and/or digits is a valid variable.  
+        /// (For example, "x", "_", "x23", "xyz", and "_x12y" are all variables under this new definition.)
+        /// 
+        /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
+        /// explanatory Message.
+        /// </summary>
+        public Formula(String formula, Func<string, string> N, Func<string, bool> V)
+        {
+            // associating our delegates N (normalize) and V (validate) to the parameter delegates given to us
+            this.N = N;
+            this.V = V;
+
+            // running the formula string through the getTokens method
+            IEnumerable<string> tempTokens = GetTokens(formula);
+
+            // parenthesis counters
+            int leftParenthesis = 0;
+            int rightParenthesis = 0;
+
+            // first element boolean that helps check if the first element is valid
+            bool firstElement = true;
+
+            // string that represents the last token added
+            string lastToken = "";
+
+            // VariableHelper is a variable that helps us normalize and validate tokens inside the below loop
+            // it is only used because we can't change elements of tempTokens inside the loop
+            string normalizeValidateStringHelper = "";
+
+            // varify that there aren't any invalid tokens
+            foreach (string s in tempTokens)
+            {
+                // Removing empty spaces (including repetitive spaces) in the string array
+                s.Trim();
+                if (s.Equals("") || s.Equals(" "))
+                    continue;
+
+                // checking if the token is valid
+                if (s.Equals("+") || s.Equals("-") || s.Equals("*") || s.Equals("/") || s.Equals("(") || s.Equals(")") || isVariable(s) || isValidNumericalValue(s))
+                {       
+                    //checking if the first element is a number, a variable, or an opening parenthesis.
+                    if (firstElement == true)
+                    {
+                        if (isValidNumericalValue(s) || isVariable(s) || s.Equals("("))
+                        {
+                            firstElement = false;
+                        }
+                        else { throw new FormulaFormatException("The first element was not a number, a variable, or an opening parenthesis"); }
+                    }
+
+                    // keeping track of the parenthesis count
+                    if (s.Equals("(")) { leftParenthesis++; }
+                    if (s.Equals(")")) { rightParenthesis++; }
+                    if (rightParenthesis > leftParenthesis) { throw new FormulaFormatException("There were more closing parenthesis then opening parenthesis"); }
+
+                    // checking token that immediately follows an opening parenthesis or an operator must be either a number, a variable, or an opening parenthesis
+                    if (lastToken.Equals("(") | lastToken.Equals("+") | lastToken.Equals("-") | lastToken.Equals("*") | lastToken.Equals("/"))
+                    {
+                        if (s.Equals("(") | isVariable(s) | isValidNumericalValue(s)) { }
+                        else throw new FormulaFormatException("A Token that immediately followed an opening parenthesis or an operator was not a number, a variable, or an opening parenthesis");
+                    }
+
+                    // checking token that immediately follows a number, a variable, or a closing parenthesis must be either an operator or a closing parenthesis
+                    if (isValidNumericalValue(lastToken) | isVariable(lastToken) | lastToken.Equals(")"))
+                    {
+                        if (s.Equals("+") | s.Equals("-") | s.Equals("*") | s.Equals("/") | s.Equals(")")) { }
+                        else if (lastToken.Equals("")) { }
+                        else throw new FormulaFormatException("A Token that immediately followed a number, a variable, or a closing parenthesis was not an operator or a closing parenthesis");
+                    }
+
+                    // checking if the numerical value is negative
+                    if (isValidNumericalValue(s))
+                    {
+                        //if t is an double         
+                        double numericalValue = 0.0;
+                        // checking if t is an double
+                        if (double.TryParse(s, out numericalValue))
+                        {
+                            if (numericalValue < 0)
+                            {
+                                throw new FormulaFormatException("The numeric value in your formula was negative.");
+                            }
+                        }
+                    }
+
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////// CENTRAL DELEGATE PROCESSING/////////////////////////////////////////
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+                    // Checking for validity of variables right before we add the variable to tokens
+                    // Normalizing and checking for validity of Variables
+                    if (isVariable(s))
+                    {
+                       // If f is syntactically correct but contains a variable v such that N(v) is 
+                       // not a legal variable according to point #3 above, the constructor should throw a FormulaFormatException with an explanatory message
+                        normalizeValidateStringHelper = N(s);
+                        if(!isVariable(normalizeValidateStringHelper))
+                        {
+                            throw new FormulaFormatException("After the normalization of a variabe, it conflicted with the general definition of variables.");
+                        }
+                        //  Otherwise, if f contains a variable v such that V(N(v)) is false, 
+                        // the constructor should throw a FormulaFormatException with an explanatory message.  
+                        else if (!V(normalizeValidateStringHelper))
+                        {
+                            throw new FormulaFormatException("After the normalization of a variable, the validation (based on the delegete given) did not hold true.");
+                        }
+
+                        // adding the normalized and varified variable to our tokens
+                        tokens.Add(normalizeValidateStringHelper);
+                        lastToken = normalizeValidateStringHelper;
+
+                        continue;
+                    }
+
+                    tokens.Add(s);
+                    lastToken = s;
+
+                    continue;
+                }
+                else { throw new FormulaFormatException("Invalid token was used."); } // if s is is invalid we throw an exception with an explanatory message
+            }
+
+            // varifying if there is at least one token
+            if (tokens.Count == 0)
+            {
+                throw new FormulaFormatException("There wasn't at least one token.");
+            }
+
+            // the last token of an expression must be a number, a variable, or a closing parenthesis.
+            if (isValidNumericalValue(lastToken) | isVariable(lastToken) | lastToken.Equals(")")) { }
+            else throw new FormulaFormatException("The last token of the expression was not a number, variable, or a closing parenthesis");
+
+            if (rightParenthesis != leftParenthesis)
+            {
+                throw new FormulaFormatException("The number of opening and closing parenthesis did not match up.");
+            }
+        }
+
+
+        /// <summary>
+        /// Creates a Formula from a string that consists of a standard infix expression composed
+        /// from non-negative floating-point numbers (using standard C# syntax for double/int literals), 
+        /// variable symbols (one or more letters followed by one or more digits), left and right
+        /// parentheses, and the four binary operator symbols +, -, *, and /.  White space is
+        /// permitted between tokens, but is not required.
+        /// 
+        /// UPDATE PS4 on Valid vairables:  A letter or underscore followed by zero or more letters and/or digits is a valid variable.  
+        /// (For example, "x", "_", "x23", "xyz", and "_x12y" are all variables under this new definition.)
         /// 
         /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
         /// explanatory Message.
         /// </summary>
         public Formula(String formula)
         {
+
             // running the formula string through the getTokens method
             IEnumerable<string>tempTokens = GetTokens(formula);
 

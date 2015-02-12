@@ -193,7 +193,12 @@ namespace TestCases
         }
 
 
-
+        [TestMethod()]
+        public void Evaluate14()
+        {
+            Formula f = new Formula("5 - _x666234");
+            Assert.AreEqual(1, f.Evaluate(s => 4), 1e-6);
+        }
 
 
 
