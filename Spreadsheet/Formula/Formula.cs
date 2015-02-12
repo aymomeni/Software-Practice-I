@@ -403,7 +403,7 @@ namespace Formulas
             String lpPattern = @"\(";
             String rpPattern = @"\)";
             String opPattern = @"[\+\-*/]";
-            String varPattern = @"[a-zA-Z]+\d+";
+            String varPattern = @"[a-zA-Z_][a-zA-Z0-9]*";
             String doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
             String spacePattern = @"\s+";
 
