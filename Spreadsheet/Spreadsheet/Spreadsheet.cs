@@ -60,6 +60,10 @@ namespace Spreadsheet
     {
 
         // constructor must be added
+        public Spreadsheet()
+        {
+
+        }
         // dependency graph must be added
         // add methods that must be implemented
 
