@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PS2GradingTests")]
+[assembly: AssemblyTitle("Spreadsheet")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Hewlett-Packard")]
-[assembly: AssemblyProduct("PS2GradingTests")]
+[assembly: AssemblyProduct("Spreadsheet")]
 [assembly: AssemblyCopyright("Copyright © Hewlett-Packard 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("6ceb44ee-fd01-4c3c-99ef-508859810e83")]
+[assembly: Guid("7f8ce341-d888-4f43-afdb-c5ad8d33ef0e")]
 
 // Version information for an assembly consists of the following four values:
 //
