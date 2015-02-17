@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Formulas; 
 using Dependencies;
+using System.Text.RegularExpressions;
 
 /**
  * PS5 - Ali Momeni - February 14, 2015 
@@ -23,9 +24,9 @@ namespace SS
     private class Cell{
 
         // NameOfCell defines the name of the cell
-        private String NameOfCell;
+        private String nameOfCell;
         // Content is an object that contains the content of the cell
-        private object Content;
+        private object content;
 
         /// <summary>
         /// Cell constructor that creates an empty cell, given a name for the cell
@@ -34,8 +35,8 @@ namespace SS
         /// <param name="NameOfCell"></param>
         private Cell(String NameOfCell)
         {
-            this.NameOfCell = NameOfCell;
-            Content = null;
+            this.nameOfCell = NameOfCell;
+            content = null;
         }
 
         /// <summary>
@@ -46,8 +47,8 @@ namespace SS
         /// <param name="Content"></param>
         private Cell(String NameOfCell, Object Content)
         {
-            this.NameOfCell = NameOfCell;
-            this.Content = Content;
+            this.nameOfCell = NameOfCell;
+            this.content = Content;
         }
 
         /// <summary>
@@ -55,14 +56,21 @@ namespace SS
         /// </summary>
         /// <returns></returns>
         public string GetName()
-        { return NameOfCell; }
+        { return nameOfCell; }
 
         /// <summary>
         /// Returns the contents of the cell
         /// </summary>
         /// <returns></returns>
         public Object GetContent()
-        { return Content; }
+        { return content; }
+
+        /// <summary>
+        /// Sets the contents of the cell
+        /// </summary>
+        /// <returns></returns>
+        public void SetCellContent(Object o)
+        { content = o; }
 
     }
 
@@ -114,14 +122,12 @@ namespace SS
     public class Spreadsheet : AbstractSpreadsheet
     {
         // using DependencyGraph created in an earlier assignment, to hold the cells of our spreadsheet
-        private DependencyGraph DependencyGraph;
+        private DependencyGraph DGSpreadsheet;
 
         // Dictionary is used to keep track of our cells. This makes accessing the cells easier
         // Dictionary "Cells" uses the name of the cell as the key, and the cell itself as the value associated with that given key
         private Dictionary<String, Cell> Cells;
 
-        // number of cells must be infinite (we will think about this for a while)
-        
         /// <summary>
         /// Spreadsheet Constructor, responsible for creating an instance
         /// of our spreasheet class. 
@@ -129,7 +135,7 @@ namespace SS
         public Spreadsheet()
         {
             // Initiating our DependencyGraph and our Cells Dictionary
-            DependencyGraph = new DependencyGraph();
+            DGSpreadsheet = new DependencyGraph();
             Cells = new Dictionary<string, Cell>();
         }
 
@@ -138,9 +144,16 @@ namespace SS
         /// </summary>
         public override IEnumerable<String> GetNamesOfAllNonemptyCells()
         {
-            
+            HashSet<String> namesOfCells = new HashSet<string>();
+            foreach (Cell c in Cells.Values)
+            {
+                // going through our cells dictionary, and grabbing each cell that 
+                // doesn't have null as it's contents
+                if (!(c.GetContent().Equals(null))) 
+                { namesOfCells.Add(c.GetName()); }
+            }
 
-            return new HashSet<String>();
+            return namesOfCells;
         }
 
         /// <summary>
@@ -151,14 +164,23 @@ namespace SS
         /// </summary>
         public override object GetCellContents(String name)
         {
-            // search for the cell by the given parameter string and return the contents of the cell
-            return new Object();
+            Object contents = null;
+
+            // Checking if the name is valid
+            if (nameValidation(name))
+            { throw new InvalidNameException(); }
+            
+            // Grabbing the the cells value based on the parameter key
+            if (Cells.ContainsKey(name))
+            { contents = Cells[name]; } 
+
+            return contents;
         }
 
         /// <summary>
         /// If name is null or invalid, throws an InvalidNameException.
         /// 
-        /// Otherwise, the contents of the named cell becomes number.  The method returns a
+        /// Otherwise, the contents of the named cell becomes a number.  The method returns a
         /// set consisting of name plus the names of all other cells whose value depends, 
         /// directly or indirectly, on the named cell.
         /// 
@@ -167,7 +189,20 @@ namespace SS
         /// </summary>
         public override ISet<String> SetCellContents(String name, double number)
         {
+            HashSet<String> namesOfTheCellAndDependents = new HashSet<string>();
+            
+            // Checking if the name is valid
+            if (nameValidation(name))
+            { throw new InvalidNameException(); }
 
+            // Grabbing the the cells value based on the parameter key
+            if (Cells.ContainsKey(name))
+            { Cells[name].SetCellContent((Object)number); }
+
+            namesOfTheCellAndDependents.Add(name);
+
+
+            
             return new HashSet<string>();
         }
 
@@ -233,6 +268,31 @@ namespace SS
         protected override IEnumerable<String> GetDirectDependents(String name)
         {
             return new HashSet<string>();
+        }
+
+
+
+        /// <summary>
+        /// Method that validates if a correct name was used for the cells
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns>True if name is valid, false otherwise.</returns>
+        private Boolean nameValidation(String name)
+        {
+            // Checking if the name is null
+            if (name.Equals(null))
+            { return false; }
+
+            // Using a regular expression match to identify if the given name is 
+            // valid (based on the class description of what a valid name is)
+            Regex regex = new Regex(@"^[a-zA-Z]+[1-9][0-9]*");
+            Match match = regex.Match(name);
+            if (match.Success)
+            {
+                return true;
+            }
+
+            return false;
         }
 
     }
