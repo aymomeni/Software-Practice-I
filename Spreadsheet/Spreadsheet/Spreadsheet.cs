@@ -20,24 +20,53 @@ namespace SS
     /// Contents: String, Double, Formula
     /// Value: String, Double, FormulaError
     /// </summary>
-    public class Cell{
+    private class Cell{
 
-        public String NameOfCell;
-        public object Content;
+        // NameOfCell defines the name of the cell
+        private String NameOfCell;
+        // Content is an object that contains the content of the cell
+        private object Content;
 
-        public Cell(String NameOfCell)
+        /// <summary>
+        /// Cell constructor that creates an empty cell, given a name for the cell
+        /// as the parameter
+        /// </summary>
+        /// <param name="NameOfCell"></param>
+        private Cell(String NameOfCell)
         {
             this.NameOfCell = NameOfCell;
             Content = null;
         }
 
-        public Cell(String NameOfCell, Object Content)
+        /// <summary>
+        /// Cell constructor that uses the name of the cell and the content as parameters,
+        /// to create an instance of a cell object
+        /// </summary>
+        /// <param name="NameOfCell"></param>
+        /// <param name="Content"></param>
+        private Cell(String NameOfCell, Object Content)
         {
             this.NameOfCell = NameOfCell;
             this.Content = Content;
         }
 
+        /// <summary>
+        /// Returns the name of the cell
+        /// </summary>
+        /// <returns></returns>
+        public string GetName()
+        { return NameOfCell; }
+
+        /// <summary>
+        /// Returns the contents of the cell
+        /// </summary>
+        /// <returns></returns>
+        public Object GetContent()
+        { return Content; }
+
     }
+
+
 
     /// <summary>
     /// An AbstractSpreadsheet object represents the state of a simple spreadsheet.  A 
@@ -87,7 +116,7 @@ namespace SS
         // Need some kind of collection that holds the contents of the Spreadsheet (the different cells)k
 
         // number of cells must be infinite
-
+        
 
         // constructor must be added
         public Spreadsheet()
