@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Spreadsheet;
 using Formulas; 
-using SS;
+
 
 /**
  * PS5 - Ali Momeni - February 14, 2015 
  * CS 3500 - Joe Zackary
  */
-namespace Spreadsheet 
+namespace SS
 {
 
     /// <summary>
@@ -38,6 +37,7 @@ namespace Spreadsheet
     /// The value of a cell can be (1) a string, (2) a double, or (3) a FormulaError.  
     /// (By analogy, the value of an Excel cell is what is displayed in that cell's position
     /// in the grid.)
+    /// 
     /// 
     /// If a cell's contents is a string, its value is that string.
     /// 
@@ -72,7 +72,12 @@ namespace Spreadsheet
         /// <summary>
         /// Enumerates the names of all the non-empty cells in the spreadsheet.
         /// </summary>
-        public abstract IEnumerable<String> GetNamesOfAllNonemptyCells();
+        public override IEnumerable<String> GetNamesOfAllNonemptyCells()
+        {
+            // have to through some data structure that contains all of the cells
+
+            return new HashSet<String>();
+        }
 
         /// <summary>
         /// If name is null or invalid, throws an InvalidNameException.
@@ -80,7 +85,11 @@ namespace Spreadsheet
         /// Otherwise, returns the contents (as opposed to the value) of the named cell.  The return
         /// value should be either a string, a double, or a Formula.
         /// </summary>
-        public abstract object GetCellContents(String name);
+        public override object GetCellContents(String name)
+        {
+            // search for the cell by the given parameter string and return the contents of the cell
+            return new Object();
+        }
 
         /// <summary>
         /// If name is null or invalid, throws an InvalidNameException.
@@ -92,7 +101,11 @@ namespace Spreadsheet
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public abstract ISet<String> SetCellContents(String name, double number);
+        public override ISet<String> SetCellContents(String name, double number)
+        {
+
+            return new HashSet<string>();
+        }
 
         /// <summary>
         /// If text is null, throws an ArgumentNullException.
@@ -106,7 +119,14 @@ namespace Spreadsheet
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public abstract ISet<String> SetCellContents(String name, String text);
+        public override ISet<String> SetCellContents(String name, String text)
+        {
+            // we have to look for the cell in our data structure that contains the cells and then we have to adjust
+            // the contents of the cell is changed to hold the parameter string
+            // returns a set of all the dependents of the cell -> first element is the name in question and the rest are the dependents of that cell?
+
+            return new HashSet<String>();
+        }
 
         /// <summary>
         /// If formula parameter is null, throws an ArgumentNullException.
@@ -123,7 +143,11 @@ namespace Spreadsheet
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public abstract ISet<String> SetCellContents(String name, Formula formula);
+        public override ISet<String> SetCellContents(String name, Formula formula)
+        {
+
+            return new HashSet<String>();
+        }
 
         /// <summary>
         /// If name is null, throws an ArgumentNullException.
@@ -142,7 +166,10 @@ namespace Spreadsheet
         /// D1 contains the formula B1 - C1
         /// The direct dependents of A1 are B1 and C1
         /// </summary>
-        protected abstract IEnumerable<String> GetDirectDependents(String name);
+        protected override IEnumerable<String> GetDirectDependents(String name)
+        {
+            return new HashSet<string>();
+        }
 
     }
 }

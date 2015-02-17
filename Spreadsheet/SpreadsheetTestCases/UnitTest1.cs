@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spreadsheet;
 using System.Collections.Generic;
 using Formulas;
-
+using SS;
 /**
  * PS5 - Ali Momeni - February 14, 2015 
  * CS 3500 - Joe Zackary
@@ -18,7 +18,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
         [TestMethod]
@@ -27,9 +27,9 @@ namespace SpreadsheetTestCases
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
             double d = (double)s.GetCellContents("A1");
-            String s = (string)s.GetCellContents("A2");
+            String s1 = (string)s.GetCellContents("A2");
             Assert.AreEqual(d, 10);
-            Assert.AreEqual(s, "");
+            Assert.AreEqual(s1, "");
         }
 
 
@@ -45,7 +45,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
         [TestMethod]
@@ -53,7 +53,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
         [TestMethod]
@@ -61,7 +61,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
 
@@ -70,7 +70,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
 
@@ -79,7 +79,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
 
@@ -89,7 +89,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
 
@@ -99,7 +99,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
 
@@ -109,7 +109,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
 
@@ -119,7 +119,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
 
@@ -129,7 +129,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
 
@@ -138,7 +138,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
 
@@ -148,7 +148,7 @@ namespace SpreadsheetTestCases
         {
             AbstractSpreadsheet s = new Spreadsheet();
             s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNoneemptyCells();
+            s.GetNamesOfAllNonemptyCells();
         }
 
     }
