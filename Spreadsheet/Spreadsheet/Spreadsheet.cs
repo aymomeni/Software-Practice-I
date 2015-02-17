@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Formulas; 
-
+using Dependencies;
 
 /**
  * PS5 - Ali Momeni - February 14, 2015 
@@ -15,7 +15,7 @@ namespace SS
 
     /// <summary>
     /// Cell class defines a single unit of a Cell
-    /// Cells have either content or a value
+    /// Cells have either content or a value (for the purpose of this assignment we will simplify to just content)
     /// 
     /// Contents: String, Double, Formula
     /// Value: String, Double, FormulaError
@@ -113,27 +113,32 @@ namespace SS
     /// </summary>
     public class Spreadsheet : AbstractSpreadsheet
     {
-        // Need some kind of collection that holds the contents of the Spreadsheet (the different cells)k
+        // using DependencyGraph created in an earlier assignment, to hold the cells of our spreadsheet
+        private DependencyGraph DependencyGraph;
 
-        // number of cells must be infinite
+        // Dictionary is used to keep track of our cells. This makes accessing the cells easier
+        // Dictionary "Cells" uses the name of the cell as the key, and the cell itself as the value associated with that given key
+        private Dictionary<String, Cell> Cells;
+
+        // number of cells must be infinite (we will think about this for a while)
         
-
-        // constructor must be added
+        /// <summary>
+        /// Spreadsheet Constructor, responsible for creating an instance
+        /// of our spreasheet class. 
+        /// </summary>
         public Spreadsheet()
         {
-
+            // Initiating our DependencyGraph and our Cells Dictionary
+            DependencyGraph = new DependencyGraph();
+            Cells = new Dictionary<string, Cell>();
         }
-        // dependency graph must be added
-        // add methods that must be implemented
-
-
 
         /// <summary>
         /// Enumerates the names of all the non-empty cells in the spreadsheet.
         /// </summary>
         public override IEnumerable<String> GetNamesOfAllNonemptyCells()
         {
-            // have to through some data structure that contains all of the cells
+            
 
             return new HashSet<String>();
         }
