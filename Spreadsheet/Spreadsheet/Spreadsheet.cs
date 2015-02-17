@@ -12,10 +12,6 @@ using Formulas;
  */
 namespace SS
 {
-    // Need some kind of collection that holds the contents of the Spreadsheet (the different cells)
-
-    // number of cells must be infinite
-
 
     /// <summary>
     /// Cell class defines a single unit of a Cell
@@ -26,10 +22,19 @@ namespace SS
     /// </summary>
     public class Cell{
 
-        public Cell()
+        public String NameOfCell;
+        public object Content;
+
+        public Cell(String NameOfCell)
         {
+            this.NameOfCell = NameOfCell;
+            Content = null;
+        }
 
-
+        public Cell(String NameOfCell, Object Content)
+        {
+            this.NameOfCell = NameOfCell;
+            this.Content = Content;
         }
 
     }
@@ -79,6 +84,10 @@ namespace SS
     /// </summary>
     public class Spreadsheet : AbstractSpreadsheet
     {
+        // Need some kind of collection that holds the contents of the Spreadsheet (the different cells)k
+
+        // number of cells must be infinite
+
 
         // constructor must be added
         public Spreadsheet()
