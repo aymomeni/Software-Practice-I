@@ -12,6 +12,27 @@ using Formulas;
  */
 namespace SS
 {
+    // Need some kind of collection that holds the contents of the Spreadsheet (the different cells)
+
+    // number of cells must be infinite
+
+
+    /// <summary>
+    /// Cell class defines a single unit of a Cell
+    /// Cells have either content or a value
+    /// 
+    /// Contents: String, Double, Formula
+    /// Value: String, Double, FormulaError
+    /// </summary>
+    public class Cell{
+
+        public Cell()
+        {
+
+
+        }
+
+    }
 
     /// <summary>
     /// An AbstractSpreadsheet object represents the state of a simple spreadsheet.  A 
