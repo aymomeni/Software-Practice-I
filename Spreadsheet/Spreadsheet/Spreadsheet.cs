@@ -21,7 +21,7 @@ namespace SS
     /// Contents: String, Double, Formula
     /// Value: String, Double, FormulaError
     /// </summary>
-    private class Cell{
+    public class Cell{
 
         // NameOfCell defines the name of the cell
         private String nameOfCell;
@@ -33,7 +33,7 @@ namespace SS
         /// as the parameter
         /// </summary>
         /// <param name="NameOfCell"></param>
-        private Cell(String NameOfCell)
+        public Cell(String NameOfCell)
         {
             this.nameOfCell = NameOfCell;
             content = null;
@@ -45,7 +45,7 @@ namespace SS
         /// </summary>
         /// <param name="NameOfCell"></param>
         /// <param name="Content"></param>
-        private Cell(String NameOfCell, Object Content)
+        public Cell(String NameOfCell, Object Content)
         {
             this.nameOfCell = NameOfCell;
             this.content = Content;
@@ -167,12 +167,12 @@ namespace SS
             Object contents = null;
 
             // Checking if the name is valid
-            if (nameValidation(name))
+            if (!nameValidation(name))
             { throw new InvalidNameException(); }
             
             // Grabbing the the cells value based on the parameter key
             if (Cells.ContainsKey(name))
-            { contents = Cells[name]; } 
+            { contents = Cells[name].GetContent(); } 
 
             return contents;
         }
@@ -192,18 +192,27 @@ namespace SS
             HashSet<String> namesOfTheCellAndDependents = new HashSet<string>();
             
             // Checking if the name is valid
-            if (nameValidation(name))
+            if(!nameValidation(name))
             { throw new InvalidNameException(); }
 
             // Grabbing the the cells value based on the parameter key
             if (Cells.ContainsKey(name))
             { Cells[name].SetCellContent((Object)number); }
+            else { Cells.Add(name, new Cell(name, (Object)number)); }
 
             namesOfTheCellAndDependents.Add(name);
 
+            //foreach (String s in this.GetDirectDependents(name))
+            //{
+            //    namesOfTheCellAndDependents.Add(s);
 
+                //foreach (String s2 in this.GetDirectDependents(s))
+                //{
+                //    namesOfTheCellAndDependents.Add(s2);
+                //}
+            //}
             
-            return new HashSet<string>();
+            return namesOfTheCellAndDependents;
         }
 
         /// <summary>
@@ -267,7 +276,11 @@ namespace SS
         /// </summary>
         protected override IEnumerable<String> GetDirectDependents(String name)
         {
-            return new HashSet<string>();
+            // checking if parameter name is null
+            if (name.Equals(null))
+            { throw new ArgumentNullException(); }
+
+            return DGSpreadsheet.GetDependents(name);
         }
 
 
@@ -280,12 +293,12 @@ namespace SS
         private Boolean nameValidation(String name)
         {
             // Checking if the name is null
-            if (name.Equals(null))
+            if (name == null)
             { return false; }
 
             // Using a regular expression match to identify if the given name is 
             // valid (based on the class description of what a valid name is)
-            Regex regex = new Regex(@"^[a-zA-Z]+[1-9][0-9]*");
+            Regex regex = new Regex(@"^[a-zA-Z]+[1-9]+[0-9]*$");
             Match match = regex.Match(name);
             if (match.Success)
             {
