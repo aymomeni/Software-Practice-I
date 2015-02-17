@@ -29,17 +29,6 @@ namespace SS
         private object content;
 
         /// <summary>
-        /// Cell constructor that creates an empty cell, given a name for the cell
-        /// as the parameter
-        /// </summary>
-        /// <param name="NameOfCell"></param>
-        public Cell(String NameOfCell)
-        {
-            this.nameOfCell = NameOfCell;
-            content = null;
-        }
-
-        /// <summary>
         /// Cell constructor that uses the name of the cell and the content as parameters,
         /// to create an instance of a cell object
         /// </summary>
@@ -197,22 +186,18 @@ namespace SS
 
             // Grabbing the the cells value based on the parameter key
             if (Cells.ContainsKey(name))
-            { Cells[name].SetCellContent((Object)number); }
-            else { Cells.Add(name, new Cell(name, (Object)number)); }
-
-            namesOfTheCellAndDependents.Add(name);
-
-            //foreach (String s in this.GetDirectDependents(name))
-            //{
-            //    namesOfTheCellAndDependents.Add(s);
-
-                //foreach (String s2 in this.GetDirectDependents(s))
-                //{
-                //    namesOfTheCellAndDependents.Add(s2);
-                //}
-            //}
+            {
+                HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+                Cells[name].SetCellContent((Object)number);
+                return recalculate;
             
-            return namesOfTheCellAndDependents;
+            }
+                // if the cell name does not exist, we don't have any
+                // dependencies to worry about and we can simply return a 
+                // hashset with the new cell name
+                Cells.Add(name, new Cell(name, (Object)number));
+                namesOfTheCellAndDependents.Add(name);
+                return namesOfTheCellAndDependents;
         }
 
         /// <summary>
@@ -277,9 +262,10 @@ namespace SS
         protected override IEnumerable<String> GetDirectDependents(String name)
         {
             // checking if parameter name is null
-            if (name.Equals(null))
+            if (!(nameValidation(name)))
             { throw new ArgumentNullException(); }
 
+            // returning a IEnumerable of all the direct dependents of the given cell name
             return DGSpreadsheet.GetDependents(name);
         }
 

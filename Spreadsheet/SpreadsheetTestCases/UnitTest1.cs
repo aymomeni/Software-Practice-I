@@ -45,11 +45,11 @@ namespace SpreadsheetTestCases
         }
 
         [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
         public void SpreadSheetTestMethod4()
         {
             AbstractSpreadsheet s = new Spreadsheet();
-            s.SetCellContents("A1", 10);
-            s.GetNamesOfAllNonemptyCells();
+            s.SetCellContents("A01", 10);
         }
 
         [TestMethod]
