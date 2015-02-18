@@ -138,7 +138,7 @@ namespace SS
             {
                 // going through our cells dictionary, and grabbing each cell that 
                 // doesn't have null as it's contents
-                if (!(c.GetContent().Equals(null))) 
+                if (!(c.GetContent().Equals(""))) 
                 { namesOfCells.Add(c.GetName()); }
             }
 
@@ -184,20 +184,29 @@ namespace SS
             if(!nameValidation(name))
             { throw new InvalidNameException(); }
 
+            // Remove all the dependents of the cell whose value is set
+            DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
+            // Grab all of the cells that are dependent on the cell that changed
+            HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+
             // Grabbing the the cells value based on the parameter key
             if (Cells.ContainsKey(name))
             {
-                HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
-                Cells[name].SetCellContent((Object)number);
-                return recalculate;
-            
+                // First remove the cell
+                Cells.Remove(name);
+                // create a new cell that contains the original name, with the new content
+                Cells.Add(name, new Cell(name, number));
+
             }
+            else
+            {
                 // if the cell name does not exist, we don't have any
                 // dependencies to worry about and we can simply return a 
-                // hashset with the new cell name
+                // hashset with the new cell name and insert the new cell and its content
                 Cells.Add(name, new Cell(name, (Object)number));
-                namesOfTheCellAndDependents.Add(name);
-                return namesOfTheCellAndDependents;
+            }
+       
+                return recalculate;   
         }
 
         /// <summary>
@@ -214,11 +223,35 @@ namespace SS
         /// </summary>
         public override ISet<String> SetCellContents(String name, String text)
         {
-            // we have to look for the cell in our data structure that contains the cells and then we have to adjust
-            // the contents of the cell is changed to hold the parameter string
-            // returns a set of all the dependents of the cell -> first element is the name in question and the rest are the dependents of that cell?
+            HashSet<String> namesOfTheCellAndDependents = new HashSet<string>();
 
-            return new HashSet<String>();
+            // Checking if the name is valid
+            if (!nameValidation(name))
+            { throw new InvalidNameException(); }
+
+            // Remove all the dependents of the cell whose value is set
+            DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
+            // Grab all of the cells that are dependent on the cell that changed
+            HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+
+            // Grabbing the the cells value based on the parameter key
+            if (Cells.ContainsKey(name))
+            {
+                // First remove the cell
+                Cells.Remove(name);
+                // create a new cell that contains the original name, with the new content
+                Cells.Add(name, new Cell(name, text));
+
+            }
+            else
+            {
+                // if the cell name does not exist, we don't have any
+                // dependencies to worry about and we can simply return a 
+                // hashset with the new cell name and insert the new cell and its content
+                Cells.Add(name, new Cell(name, (Object)text));
+            }
+
+            return recalculate; 
         }
 
         /// <summary>
@@ -238,6 +271,46 @@ namespace SS
         /// </summary>
         public override ISet<String> SetCellContents(String name, Formula formula)
         {
+
+            // Checking if the name is valid
+            if (!nameValidation(name))
+            { throw new InvalidNameException(); }
+
+            try
+            {
+                // Remove all the dependents of the cell whose value is set
+                DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
+                
+                // we need to go through the variables of formula and make sure 
+                // any additional dependencies are inserted into our Dependency Graph of cells
+                foreach(String s in formula.GetVariables())
+                {
+                    DGSpreadsheet.AddDependency(name, s);
+                }
+                // Grab all of the cells that are dependent on the cell that changed
+                HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+            }
+            catch (CircularException exception)
+            {
+                throw exception;
+            }
+
+            // Grabbing the the cells value based on the parameter key
+            if (Cells.ContainsKey(name))
+            {
+                // First remove the cell
+                Cells.Remove(name);
+                // create a new cell that contains the original name, with the new content
+                Cells.Add(name, new Cell(name, formula));
+
+            }
+            else
+            {
+                // if the cell name does not exist, we don't have any
+                // dependencies to worry about and we can simply return a 
+                // hashset with the new cell name and insert the new cell and its content
+                Cells.Add(name, new Cell(name, (Object)formula));
+            }
 
             return new HashSet<String>();
         }
