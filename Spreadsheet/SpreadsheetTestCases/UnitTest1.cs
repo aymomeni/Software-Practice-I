@@ -265,6 +265,7 @@ namespace SpreadsheetTestCases
 
         }
 
+        // Couple of minor stress tests using formula and double methods
 
         [TestMethod]
         public void SpreadSheetTestMethod24()
