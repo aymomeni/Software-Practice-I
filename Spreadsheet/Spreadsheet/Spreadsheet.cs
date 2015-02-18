@@ -54,13 +54,6 @@ namespace SS
         public Object GetContent()
         { return content; }
 
-        /// <summary>
-        /// Sets the contents of the cell
-        /// </summary>
-        /// <returns></returns>
-        public void SetCellContent(Object o)
-        { content = o; }
-
     }
 
 
@@ -114,8 +107,8 @@ namespace SS
         private DependencyGraph DGSpreadsheet;
 
         // Dictionary is used to keep track of our cells. This makes accessing the cells easier
-        // Dictionary "Cells" uses the name of the cell as the key, and the cell itself as the value associated with that given key
-        private Dictionary<String, Cell> Cells;
+        // Dictionary "cellDictionary" uses the name of the cell as the key, and the cell itself as the value associated with that given key
+        private Dictionary<String, Cell> cellDictionary;
 
         /// <summary>
         /// Spreadsheet Constructor, responsible for creating an instance
@@ -125,7 +118,7 @@ namespace SS
         {
             // Initiating our DependencyGraph and our Cells Dictionary
             DGSpreadsheet = new DependencyGraph();
-            Cells = new Dictionary<string, Cell>();
+            cellDictionary = new Dictionary<string, Cell>();
         }
 
         /// <summary>
@@ -134,7 +127,7 @@ namespace SS
         public override IEnumerable<String> GetNamesOfAllNonemptyCells()
         {
             HashSet<String> namesOfCells = new HashSet<string>();
-            foreach (Cell c in Cells.Values)
+            foreach (Cell c in cellDictionary.Values)
             {
                 // going through our cells dictionary, and grabbing each cell that 
                 // doesn't have null as it's contents
@@ -160,8 +153,8 @@ namespace SS
             { throw new InvalidNameException(); }
             
             // Grabbing the the cells value based on the parameter key
-            if (Cells.ContainsKey(name))
-            { contents = Cells[name].GetContent(); } 
+            if (cellDictionary.ContainsKey(name))
+            { contents = cellDictionary[name].GetContent(); } 
 
             return contents;
         }
@@ -190,12 +183,12 @@ namespace SS
             HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
 
             // Grabbing the the cells value based on the parameter key
-            if (Cells.ContainsKey(name))
+            if (cellDictionary.ContainsKey(name))
             {
                 // First remove the cell
-                Cells.Remove(name);
+                cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                Cells.Add(name, new Cell(name, number));
+                cellDictionary.Add(name, new Cell(name, number));
 
             }
             else
@@ -203,7 +196,7 @@ namespace SS
                 // if the cell name does not exist, we don't have any
                 // dependencies to worry about and we can simply return a 
                 // hashset with the new cell name and insert the new cell and its content
-                Cells.Add(name, new Cell(name, (Object)number));
+                cellDictionary.Add(name, new Cell(name, (Object)number));
             }
        
                 return recalculate;   
@@ -225,6 +218,10 @@ namespace SS
         {
             HashSet<String> namesOfTheCellAndDependents = new HashSet<string>();
 
+            // Checking if the text is null
+            if (text == null)
+            { throw new ArgumentNullException(); }
+
             // Checking if the name is valid
             if (!nameValidation(name))
             { throw new InvalidNameException(); }
@@ -235,12 +232,12 @@ namespace SS
             HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
 
             // Grabbing the the cells value based on the parameter key
-            if (Cells.ContainsKey(name))
+            if (cellDictionary.ContainsKey(name))
             {
                 // First remove the cell
-                Cells.Remove(name);
+                cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                Cells.Add(name, new Cell(name, text));
+                cellDictionary.Add(name, new Cell(name, text));
 
             }
             else
@@ -248,7 +245,7 @@ namespace SS
                 // if the cell name does not exist, we don't have any
                 // dependencies to worry about and we can simply return a 
                 // hashset with the new cell name and insert the new cell and its content
-                Cells.Add(name, new Cell(name, (Object)text));
+                cellDictionary.Add(name, new Cell(name, (Object)text));
             }
 
             return recalculate; 
@@ -271,6 +268,10 @@ namespace SS
         /// </summary>
         public override ISet<String> SetCellContents(String name, Formula formula)
         {
+
+            //Checking if formula is null
+            if (formula == null)
+            { throw new ArgumentNullException(); }
 
             // Checking if the name is valid
             if (!nameValidation(name))
@@ -296,12 +297,12 @@ namespace SS
             }
 
             // Grabbing the the cells value based on the parameter key
-            if (Cells.ContainsKey(name))
+            if (cellDictionary.ContainsKey(name))
             {
                 // First remove the cell
-                Cells.Remove(name);
+                cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                Cells.Add(name, new Cell(name, formula));
+                cellDictionary.Add(name, new Cell(name, formula));
 
             }
             else
@@ -309,7 +310,7 @@ namespace SS
                 // if the cell name does not exist, we don't have any
                 // dependencies to worry about and we can simply return a 
                 // hashset with the new cell name and insert the new cell and its content
-                Cells.Add(name, new Cell(name, (Object)formula));
+                cellDictionary.Add(name, new Cell(name, (Object)formula));
             }
 
             return new HashSet<String>();
