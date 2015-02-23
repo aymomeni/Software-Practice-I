@@ -27,7 +27,7 @@ namespace SS
         private String nameOfCell;
         // Content is an object that contains the content of the cell
         private object content;
-
+        
         /// <summary>
         /// Cell constructor that uses the name of the cell and the content as parameters,
         /// to create an instance of a cell object
