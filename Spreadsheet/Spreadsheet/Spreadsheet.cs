@@ -6,10 +6,16 @@ using System.Threading.Tasks;
 using Formulas; 
 using Dependencies;
 using System.Text.RegularExpressions;
+using System.IO;
 
 /**
- * PS5 - Ali Momeni - February 14, 2015 
+ * PS6 - Ali Momeni - February 23, 2015 
  * CS 3500 - Joe Zackary
+ * 
+ * PS5 - Abstract Spreadsheet assignment February 14, 2015
+ * 
+ * Update PS6: Assignment changed abstract spreadsheet which had additional alterations,
+ * that are described below in the
  */
 namespace SS
 {
@@ -59,6 +65,21 @@ namespace SS
 
 
     /// <summary>
+    /// PS6 Update Paragraph 1-3:
+    /// 
+    /// An AbstractSpreadsheet object represents the state of a simple spreadsheet.  A 
+    /// spreadsheet consists of a case-insensitive regular expression (called IsValid
+    /// below) and an infinite number of named cells.
+    /// 
+    /// A string is a valid cell name if and only if (1) it consists of one or more letters, 
+    /// followed by a non-zero digit, followed by zero or more digits AND (2) it is 
+    /// accepted by IsValid.
+    /// 
+    /// For example, "A15", "a15", "XY32", and "BC7" are valid cell names, so long as they also
+    /// are accepted by IsValid.  On the other hand, 
+    /// "Z", "X07", and "hello" are not valid cell names, regardless of IsValid.
+    /// 
+    /// 
     /// An AbstractSpreadsheet object represents the state of a simple spreadsheet.  A 
     /// spreadsheet consists of an infinite number of named cells.
     /// 
@@ -110,16 +131,159 @@ namespace SS
         // Dictionary "cellDictionary" uses the name of the cell as the key, and the cell itself as the value associated with that given key
         private Dictionary<String, Cell> cellDictionary;
 
+        // Class level regular expression
+        private Regex isValid; 
+
+        // Boolean expression that keeps track of if a regular expression had been passed in
+        private Boolean isValidBool;
+
+
         /// <summary>
         /// Spreadsheet Constructor, responsible for creating an instance
-        /// of our spreasheet class. 
+        /// of our spreasheet class.
+        /// 
+        /// PS6 Update: Creates an empty Spreadsheet whose IsValid regular expression accepts every string. (represented by the boolean isValid)
         /// </summary>
         public Spreadsheet()
         {
             // Initiating our DependencyGraph and our Cells Dictionary
             DGSpreadsheet = new DependencyGraph();
             cellDictionary = new Dictionary<string, Cell>();
+            // Setting the boolean isValid to false => meaning no extra checks on the validity of variables is performed
+            isValidBool = false;
         }
+
+
+        /// <summary>
+        /// Spreadsheet Constructor, responsible for creating an instance
+        /// of our spreasheet class. Creates an empty Spreadsheet whose IsValid regular expression is provided as the parameter
+        /// 
+        ///
+        /// PS6 Update: Creates an empty Spreadsheet whose IsValid regular expression accepts string only if the
+        /// regex expression is also passed. (represented by the boolean isValid and the isValid regex)
+        /// </summary>
+
+        public Spreadsheet(Regex isValid)
+        {
+            // Initiating our DependencyGraph and our Cells Dictionary
+            DGSpreadsheet = new DependencyGraph();
+            cellDictionary = new Dictionary<string, Cell>();
+            // Setting the boolean isValid to false => meaning no extra checks on the validity of variables is performed
+            isValidBool = true;
+            // Setting the regex expression to the given parameter regex expression
+            this.isValid = isValid;       
+        }
+
+
+        /// <summary>
+        /// Creates a Spreadsheet that is a duplicate of the spreadsheet saved in source.
+        /// See the AbstractSpreadsheet.Save method for the file format specification.
+        /// If there's a problem reading source, throws an IOException
+        /// If the contents of source is not formatted properly, throws a SpreadsheetReadException
+        /// </summary>
+        public Spreadsheet(TextReader source)
+        {
+
+            // must grab the regular expression from the text reader
+            // then create a spreadsheet based on source
+        }
+
+
+        // ADDED FOR PS6
+        /// <summary>
+        /// True if this spreadsheet has been modified since it was created or saved
+        /// (whichever happened most recently); false otherwise.
+        /// </summary>
+        public abstract bool Changed { get; protected set; }
+
+        // ADDED FOR PS6
+        /// <summary>
+        /// Writes the contents of this spreadsheet to dest using an XML format.
+        /// The XML elements should be structured as follows:
+        ///
+        /// <spreadsheet isvalid="IsValid regex goes here">
+        ///   <cell>
+        ///     <name>
+        ///       cell name goes here
+        ///     </name>
+        ///     <contents>
+        ///       cell contents goes here
+        ///     </contents>
+        ///   </cell>
+        /// </spreadsheet>
+        ///
+        /// The value of the isvalid attribute should be IsValid.ToString()
+        /// 
+        /// There should be one cell element for each non-empty cell in the spreadsheet.
+        /// If the cell contains a string, the string (without surrounding double quotes) should be written as the contents.
+        /// If the cell contains a double d, d.ToString() should be written as the contents.
+        /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
+        /// IMPLEMENTATION NOTE:  You'll have to override the ToString method in the Formula class
+        ///
+        /// If there are any problems writing to dest, the method should throw an IOException.
+        /// </summary>
+        public abstract void Save(TextWriter dest);
+
+        // ADDED FOR PS6
+        /// <summary>
+        /// If name is null or invalid, throws an InvalidNameException.
+        ///
+        /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
+        /// value should be either a string, a double, or a Spreadsheet.FormulaError.
+        /// </summary>
+        public abstract object GetCellValue(String name);
+
+
+
+        // ADDED FOR PS6
+        /// <summary>
+        /// If content is null, throws an ArgumentNullException.
+        ///
+        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
+        ///
+        /// Otherwise, if content parses as a double, the contents of the named
+        /// cell becomes that double.
+        ///
+        /// Otherwise, if content begins with the character '=', an attempt is made
+        /// to parse the remainder of content into a Formula f using the Formula
+        /// constructor.  There are then three possibilities:
+        ///
+        ///   (1) If the remainder of content cannot be parsed into a Formula, a
+        ///       SpreadsheetUtilities.FormulaFormatException is thrown.
+        ///
+        ///   (2) Otherwise, if changing the contents of the named cell to be f
+        ///       would cause a circular dependency, a CircularException is thrown.
+        ///
+        ///   (3) Otherwise, the contents of the named cell becomes f.
+        ///
+        /// Otherwise, the contents of the named cell becomes content.
+        ///
+        /// If an exception is not thrown, the method returns a set consisting of
+        /// name plus the names of all other cells whose value depends, directly
+        /// or indirectly, on the named cell.
+        ///
+        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        /// set {A1, B1, C1} is returned.
+        /// </summary>
+        public override ISet<String> SetContentsOfCell(String name, String content)
+        {
+
+            return new HashSet<String>();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         /// <summary>
         /// Enumerates the names of all the non-empty cells in the spreadsheet.
@@ -365,6 +529,15 @@ namespace SS
             Match match = regex.Match(name);
             if (match.Success)
             {
+                // checking for the validity based on the isValid regex expression
+                if (isValidBool)
+                {
+                    Match matchIsValid = isValid.Match(name);
+                    if (match.Success)
+                    { return true; } // if it machesthe is valid regex we return true
+                    else { return false; } // if the name does not mach is valid we return false
+                }
+
                 return true;
             }
 
