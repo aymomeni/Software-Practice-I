@@ -146,7 +146,7 @@ namespace SS
         /// </summary>
         public override object GetCellContents(String name)
         {
-            Object contents = null;
+            Object contents = "";
 
             // Checking if the name is valid
             if (!nameValidation(name))
@@ -171,7 +171,7 @@ namespace SS
         /// </summary>
         public override ISet<String> SetCellContents(String name, double number)
         {
-            HashSet<String> namesOfTheCellAndDependents = new HashSet<string>();
+            HashSet<String> recalculate;
             
             // Checking if the name is valid
             if(!nameValidation(name))
@@ -180,7 +180,7 @@ namespace SS
             // Remove all the dependents of the cell whose value is set
             DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
             // Grab all of the cells that are dependent on the cell that changed
-            HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+            recalculate = new HashSet<string>(GetCellsToRecalculate(name));
 
             // Grabbing the the cells value based on the parameter key
             if (cellDictionary.ContainsKey(name))
@@ -216,7 +216,7 @@ namespace SS
         /// </summary>
         public override ISet<String> SetCellContents(String name, String text)
         {
-            HashSet<String> namesOfTheCellAndDependents = new HashSet<string>();
+            HashSet<String> recalculate = new HashSet<string>();
 
             // Checking if the text is null
             if (text == null)
@@ -228,8 +228,9 @@ namespace SS
 
             // Remove all the dependents of the cell whose value is set
             DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
+
             // Grab all of the cells that are dependent on the cell that changed
-            HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+            recalculate = new HashSet<string>(GetCellsToRecalculate(name));
 
             // Grabbing the the cells value based on the parameter key
             if (cellDictionary.ContainsKey(name))
@@ -277,6 +278,8 @@ namespace SS
             if (!nameValidation(name))
             { throw new InvalidNameException(); }
 
+            HashSet<String> recalculate;
+
             try
             {
                 // Remove all the dependents of the cell whose value is set
@@ -289,7 +292,7 @@ namespace SS
                     DGSpreadsheet.AddDependency(name, s);
                 }
                 // Grab all of the cells that are dependent on the cell that changed
-                HashSet<String> recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+                recalculate = new HashSet<string>(GetCellsToRecalculate(name));
             }
             catch (CircularException exception)
             {
@@ -313,7 +316,7 @@ namespace SS
                 cellDictionary.Add(name, new Cell(name, (Object)formula));
             }
 
-            return new HashSet<String>();
+            return recalculate;
         }
 
         /// <summary>
@@ -340,7 +343,7 @@ namespace SS
             { throw new ArgumentNullException(); }
 
             // returning a IEnumerable of all the direct dependents of the given cell name
-            return DGSpreadsheet.GetDependents(name);
+            return DGSpreadsheet.GetDependees(name);
         }
 
 
