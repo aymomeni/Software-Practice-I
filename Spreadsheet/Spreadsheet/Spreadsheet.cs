@@ -34,7 +34,10 @@ namespace SS
         private String nameOfCell;
         // Content is an object that contains the content of the cell
         private object content;
-        
+        // Value is either a String, a double, or a formulaError
+        private object value;
+        //TODO: lookup needs to be fixed
+
         /// <summary>
         /// Cell constructor that uses the name of the cell and the content as parameters,
         /// to create an instance of a cell object
@@ -45,7 +48,16 @@ namespace SS
         {
             this.nameOfCell = NameOfCell;
             this.content = Content;
+
+            if (content is Formula || content is double)
+            {
+                Formula f = new Formula(content.ToString());
+                //TODO: somehow the value must be set ---> this.value = (object)f.Evaluate(lookup);
+            }
         }
+
+        //TODO: we need to integrate evaluate method
+        //TODO: how do we deal with capitalization?
 
         /// <summary>
         /// Returns the name of the cell
@@ -60,6 +72,13 @@ namespace SS
         /// <returns></returns>
         public Object GetContent()
         { return content; }
+
+        /// <summary>
+        /// Returns the value of the cell
+        /// </summary>
+        /// <returns></returns>
+        public object GetValue()
+        { return value; }
 
     }
 
@@ -184,9 +203,38 @@ namespace SS
         public Spreadsheet(TextReader source)
         {
 
+            // Local variables to hold the xml data (name, contents)
+            string tempCellName = "";
+            string tempContent = "";
+
             // must grab the regular expression from the text reader
             // then create a spreadsheet based on source
             // create a boolean
+            try
+            {
+                using (XmlReader xmlReader = XmlReader.Create(source))
+                {
+
+                    while (xmlReader.Read())
+                    {
+                        if (xmlReader.IsStartElement())
+                        {
+                            if (xmlReader.Name.Equals("cell"))
+                            {
+                                xmlReader.Read();
+                                tempCellName = xmlReader.Value;
+                                // Checking if the name is valid
+                               if (!nameValidation(tempCellName))
+                               { throw new InvalidNameException(); }
+                            }
+                            else if(xmlReader.Name.Equals("content"))                               
+                                xmlReader.Read();
+                                tempContent = xmlReader.Value;
+                                SetContentsOfCell(tempCellName, tempContent);
+                            }
+                        }
+                    }
+            } catch (IOException) { throw new IOException("There was an issue reading from the source file"); }
         }
 
         // ADDED FOR PS6
@@ -225,11 +273,9 @@ namespace SS
         /// </summary>
         public override void Save(TextWriter dest)
         {
-
-
             try
             {
-                using (XmlWriter writer = XmlWriter.Create("spreadsheed.xml"))
+                using (XmlWriter writer = XmlWriter.Create(dest))
                 {
                     writer.WriteStartDocument();
                     writer.WriteStartElement("spreadsheet isvalid=", isValid.ToString());
@@ -237,14 +283,15 @@ namespace SS
                     foreach (String s in this.GetNamesOfAllNonemptyCells())
                     {
                         Cell c;
-
                         if (cellDictionary.TryGetValue(s, out c))
                         {
 
                             writer.WriteStartElement("cell");
                             // Writing the name of each cell 
-                            writer.WriteElementString("cell", c.GetName()); // must be the name after it has beeen capitalized
+                            writer.WriteElementString("name", c.GetName()); // must be the name after it has beeen capitalized
                             writer.WriteEndElement(); // ending cellname
+
+                            //TODO: Still need checking for types
 
                             // Writing the cell content 
                             writer.WriteElementString("content", c.GetContent().ToString()); // must be modified to write content
@@ -252,23 +299,16 @@ namespace SS
 
                             // ending cell
                             writer.WriteEndElement();
-
                         }
                     }
-                  
                     writer.WriteEndDocument();
-
                 }
-
-                
             }
             catch (IOException)
             {
                 throw new IOException("There were problems writing to des (destination TextWriter)");
             }
-
-
-            }
+        }
 
         // ADDED FOR PS6
         /// <summary>
@@ -277,7 +317,16 @@ namespace SS
         /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
         /// value should be either a string, a double, or a Spreadsheet.FormulaError.
         /// </summary>
-        public abstract object GetCellValue(String name);
+        public override object GetCellValue(String name)
+        {
+            // Checking if the name is valid
+            if (!nameValidation(name))
+            { throw new InvalidNameException(); }
+            // if the name exists in our dictionary we grab it
+            if (cellDictionary.ContainsKey(name)) { return cellDictionary[name].GetValue(); }
+            // else we return an empty string
+            return "";
+        }
 
 
 
@@ -528,6 +577,7 @@ namespace SS
 
             return recalculate;
         }
+
 
         /// <summary>
         /// If name is null, throws an ArgumentNullException.
