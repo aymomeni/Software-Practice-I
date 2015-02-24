@@ -8,6 +8,7 @@ using Dependencies;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Xml;
+using Formulas;
 
 /**
  * PS6 - Ali Momeni - February 23, 2015 
@@ -36,24 +37,29 @@ namespace SS
         private object content;
         // Value is either a String, a double, or a formulaError
         private object value;
-        //TODO: lookup needs to be fixed
 
         /// <summary>
+        /// PS6 UPDATE: Added a lookup function as the parameter that immidiately sets the value variable and a value variable
+        /// 
         /// Cell constructor that uses the name of the cell and the content as parameters,
         /// to create an instance of a cell object
         /// </summary>
         /// <param name="NameOfCell"></param>
         /// <param name="Content"></param>
-        public Cell(String NameOfCell, Object Content)
+        public Cell(String NameOfCell, Object Content, Func<string, double> lookup)
         {
+            Formulas.Lookup l = lookup;
+            
+
             this.nameOfCell = NameOfCell;
             this.content = Content;
 
             if (content is Formula || content is double)
             {
                 Formula f = new Formula(content.ToString());
-                //TODO: somehow the value must be set ---> this.value = (object)f.Evaluate(lookup);
+                this.value = (object)f.Evaluate(l); //TODO: how to make the delegate work
             }
+            else { value = content; }
         }
 
         //TODO: we need to integrate evaluate method
@@ -155,7 +161,7 @@ namespace SS
         private Regex isValid; 
 
         // Boolean expression that keeps track of if a regular expression had been passed in
-        private Boolean isValidBool;
+        private Boolean isValidBool = true; // initially set to true, expecting that there is a isValid variable
 
 
         /// <summary>
@@ -203,7 +209,7 @@ namespace SS
         public Spreadsheet(TextReader source)
         {
 
-            // Local variables to hold the xml data (name, contents)
+            // Local variables to hold the xml data (name of cell and content of cell)
             string tempCellName = "";
             string tempContent = "";
 
@@ -214,7 +220,6 @@ namespace SS
             {
                 using (XmlReader xmlReader = XmlReader.Create(source))
                 {
-
                     while (xmlReader.Read())
                     {
                         if (xmlReader.IsStartElement())
@@ -306,7 +311,7 @@ namespace SS
             }
             catch (IOException)
             {
-                throw new IOException("There were problems writing to des (destination TextWriter)");
+                throw new IOException("There were problems writing to the destination TextWriter");
             }
         }
 
@@ -327,7 +332,6 @@ namespace SS
             // else we return an empty string
             return "";
         }
-
 
 
         // ADDED FOR PS6
@@ -362,21 +366,49 @@ namespace SS
         /// </summary>
         public override ISet<String> SetContentsOfCell(String name, String content)
         {
+            // if content is null, throw argumentNullException
+            if (content == null)
+            { throw new ArgumentNullException();}
+            Changed = true;
+
+            Double checkdouble = 0.0;
+
+            // checking for the validity of the name parameter
+            if(!nameValidation(name)){ throw new InvalidNameException(); }
+            
+            if(content.StartsWith("=")){
+
+                Formula f = new Formula(content.Substring(1));
+                return SetCellContents(name, f);
+
+            } else if(Double.TryParse(content, out checkdouble)){
+                return SetCellContents(name, checkdouble);
+            }
 
             return new HashSet<String>();
         }
 
 
 
+        /// <summary>
+        /// This is a helper method that looks up the value of a given cell
+        /// its main use is when cells are created. Here when in the creation of a cell
+        /// we want to immidiately use lookup as the delegete for the evaluator method in formula
+        /// </summary>
+        /// <returns></returns>
+        private double lookup(string nameOfCell)
+        {
+            //TODO: Exceptions?
 
+            Cell tempCell = cellDictionary[nameOfCell];
 
+            if (tempCell.GetValue() is double)
+            {
+                return (double)tempCell.GetValue();
+            }
 
-
-
-
-
-
-
+            return 0.0; // TODO: Exception?
+        }
 
 
 
@@ -419,6 +451,7 @@ namespace SS
         }
 
         /// <summary>
+        /// MODIFIED PROTECTION FOR PS5
         /// If name is null or invalid, throws an InvalidNameException.
         /// 
         /// Otherwise, the contents of the named cell becomes a number.  The method returns a
@@ -428,7 +461,7 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, double number)
+        protected override ISet<String> SetCellContents(String name, double number)
         {
             HashSet<String> recalculate;
             
@@ -447,21 +480,21 @@ namespace SS
                 // First remove the cell
                 cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                cellDictionary.Add(name, new Cell(name, number));
-
+                cellDictionary.Add(name, new Cell(name, number, lookup));
             }
             else
             {
                 // if the cell name does not exist, we don't have any
                 // dependencies to worry about and we can simply return a 
                 // hashset with the new cell name and insert the new cell and its content
-                cellDictionary.Add(name, new Cell(name, (Object)number));
+                cellDictionary.Add(name, new Cell(name, (Object)number, lookup));
             }
        
                 return recalculate;   
         }
 
         /// <summary>
+        /// MODIFIED PROTECTION FOR PS5
         /// If text is null, throws an ArgumentNullException.
         /// 
         /// Otherwise, if name is null or invalid, throws an InvalidNameException.
@@ -473,7 +506,7 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, String text)
+        protected override ISet<String> SetCellContents(String name, String text)
         {
             HashSet<String> recalculate = new HashSet<string>();
 
@@ -497,7 +530,7 @@ namespace SS
                 // First remove the cell
                 cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                cellDictionary.Add(name, new Cell(name, text));
+                cellDictionary.Add(name, new Cell(name, text, lookup));
 
             }
             else
@@ -505,13 +538,14 @@ namespace SS
                 // if the cell name does not exist, we don't have any
                 // dependencies to worry about and we can simply return a 
                 // hashset with the new cell name and insert the new cell and its content
-                cellDictionary.Add(name, new Cell(name, (Object)text));
+                cellDictionary.Add(name, new Cell(name, (Object)text, lookup));
             }
 
             return recalculate; 
         }
 
         /// <summary>
+        /// MODIFIED PROTECTION FOR PS5
         /// If formula parameter is null, throws an ArgumentNullException.
         /// 
         /// Otherwise, if name is null or invalid, throws an InvalidNameException.
@@ -526,7 +560,7 @@ namespace SS
         /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
         /// set {A1, B1, C1} is returned.
         /// </summary>
-        public override ISet<String> SetCellContents(String name, Formula formula)
+        protected override ISet<String> SetCellContents(String name, Formula formula)
         {
 
             //Checking if formula is null
@@ -564,7 +598,7 @@ namespace SS
                 // First remove the cell
                 cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                cellDictionary.Add(name, new Cell(name, formula));
+                cellDictionary.Add(name, new Cell(name, formula, lookup));
 
             }
             else
@@ -572,7 +606,7 @@ namespace SS
                 // if the cell name does not exist, we don't have any
                 // dependencies to worry about and we can simply return a 
                 // hashset with the new cell name and insert the new cell and its content
-                cellDictionary.Add(name, new Cell(name, (Object)formula));
+                cellDictionary.Add(name, new Cell(name, (Object)formula, lookup));
             }
 
             return recalculate;
