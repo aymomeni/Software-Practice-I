@@ -48,9 +48,10 @@ namespace SS
         /// <param name="Content"></param>
         public Cell(String NameOfCell, Object Content, Func<string, double> lookup)
         {
-            Formulas.Lookup l = lookup;
-            
 
+            // Setting up the delegate to perform the lookup in the evaluation of each cell
+            Formulas.Lookup l = new Formulas.Lookup(lookup);
+            
             this.nameOfCell = NameOfCell;
             this.content = Content;
 
