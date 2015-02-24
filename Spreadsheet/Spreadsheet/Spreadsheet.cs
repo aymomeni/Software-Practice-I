@@ -7,6 +7,7 @@ using Formulas;
 using Dependencies;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Xml;
 
 /**
  * PS6 - Ali Momeni - February 23, 2015 
@@ -174,7 +175,6 @@ namespace SS
             this.isValid = isValid;       
         }
 
-
         /// <summary>
         /// Creates a Spreadsheet that is a duplicate of the spreadsheet saved in source.
         /// See the AbstractSpreadsheet.Save method for the file format specification.
@@ -186,15 +186,16 @@ namespace SS
 
             // must grab the regular expression from the text reader
             // then create a spreadsheet based on source
+            // create a boolean
         }
-
 
         // ADDED FOR PS6
         /// <summary>
         /// True if this spreadsheet has been modified since it was created or saved
         /// (whichever happened most recently); false otherwise.
         /// </summary>
-        public abstract bool Changed { get; protected set; }
+        public override bool Changed { get; protected set; }
+
 
         // ADDED FOR PS6
         /// <summary>
@@ -222,7 +223,52 @@ namespace SS
         ///
         /// If there are any problems writing to dest, the method should throw an IOException.
         /// </summary>
-        public abstract void Save(TextWriter dest);
+        public override void Save(TextWriter dest)
+        {
+
+
+            try
+            {
+                using (XmlWriter writer = XmlWriter.Create("spreadsheed.xml"))
+                {
+                    writer.WriteStartDocument();
+                    writer.WriteStartElement("spreadsheet isvalid=", isValid.ToString());
+
+                    foreach (String s in this.GetNamesOfAllNonemptyCells())
+                    {
+                        Cell c;
+
+                        if (cellDictionary.TryGetValue(s, out c))
+                        {
+
+                            writer.WriteStartElement("cell");
+                            // Writing the name of each cell 
+                            writer.WriteElementString("cell", c.GetName()); // must be the name after it has beeen capitalized
+                            writer.WriteEndElement(); // ending cellname
+
+                            // Writing the cell content 
+                            writer.WriteElementString("content", c.GetContent().ToString()); // must be modified to write content
+                            writer.WriteEndElement(); // ending cellcontent
+
+                            // ending cell
+                            writer.WriteEndElement();
+
+                        }
+                    }
+                  
+                    writer.WriteEndDocument();
+
+                }
+
+                
+            }
+            catch (IOException)
+            {
+                throw new IOException("There were problems writing to des (destination TextWriter)");
+            }
+
+
+            }
 
         // ADDED FOR PS6
         /// <summary>
