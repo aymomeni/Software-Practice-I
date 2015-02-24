@@ -50,10 +50,10 @@ namespace SS
         {
 
             // Setting up the delegate to perform the lookup in the evaluation of each cell
-            Formulas.Lookup l = new Formulas.Lookup(lookup);
+            //Formulas.Lookup l = new Formulas.Lookup(lookup);
             
             // Setting up class variables
-            this.nameOfCell = NameOfCell;
+            this.nameOfCell = NameOfCell.ToUpper(); // saving each name in captial case
             this.content = Content;
 
             // If we have a formula or a double we can evaluate the method and grab its value for our
@@ -61,7 +61,7 @@ namespace SS
             if (content is Formula || content is double)
             {
                 Formula f = new Formula(content.ToString());
-                this.value = (object)f.Evaluate(l); 
+                this.value = (object)f.Evaluate(s => lookup(nameOfCell)); 
             }
             // else the content and the value are simply a string and the same
             else { value = content; }
@@ -329,6 +329,10 @@ namespace SS
             // Checking if the name is valid
             if (!nameValidation(name))
             { throw new InvalidNameException(); }
+
+            //name is converted to upper
+            name = name.ToUpper();
+
             // if the name exists in our dictionary we grab it
             if (cellDictionary.ContainsKey(name)) { return cellDictionary[name].GetValue(); }
             // else we return an empty string
@@ -371,6 +375,10 @@ namespace SS
             // if content is null, throw argumentNullException
             if (content == null)
             { throw new ArgumentNullException();}
+
+            //name is converted to upper
+            name = name.ToUpper();
+            
             Changed = true;
 
             Double checkdouble = 0.0;
@@ -402,6 +410,9 @@ namespace SS
         {
             //TODO: Exceptions?
 
+            //name is converted to upper
+            nameOfCell = nameOfCell.ToUpper();
+
             Cell tempCell = cellDictionary[nameOfCell];
 
             if (tempCell.GetValue() is double)
@@ -411,7 +422,6 @@ namespace SS
 
             return 0.0; // TODO: Exception?
         }
-
 
 
         /// <summary>
@@ -440,6 +450,9 @@ namespace SS
         public override object GetCellContents(String name)
         {
             Object contents = "";
+
+            //name is converted to upper
+            name = name.ToUpper();
 
             // Checking if the name is valid
             if (!nameValidation(name))
@@ -471,6 +484,9 @@ namespace SS
             if(!nameValidation(name))
             { throw new InvalidNameException(); }
 
+            //name is converted to upper
+            name = name.ToUpper();
+
             // Remove all the dependents of the cell whose value is set
             DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
             // Grab all of the cells that are dependent on the cell that changed
@@ -482,7 +498,7 @@ namespace SS
                 // First remove the cell
                 cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                cellDictionary.Add(name, new Cell(name, number, lookup));
+                cellDictionary.Add(name.ToUpper(), new Cell(name, number, lookup));
             }
             else
             {
@@ -520,6 +536,9 @@ namespace SS
             if (!nameValidation(name))
             { throw new InvalidNameException(); }
 
+            //name is converted to upper
+            name = name.ToUpper();
+
             // Remove all the dependents of the cell whose value is set
             DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
 
@@ -532,7 +551,7 @@ namespace SS
                 // First remove the cell
                 cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                cellDictionary.Add(name, new Cell(name, text, lookup));
+                cellDictionary.Add(name.ToUpper(), new Cell(name, text, lookup));
 
             }
             else
@@ -573,6 +592,9 @@ namespace SS
             if (!nameValidation(name))
             { throw new InvalidNameException(); }
 
+            //name is converted to upper
+            name = name.ToUpper();
+
             HashSet<String> recalculate;
 
             try
@@ -600,7 +622,7 @@ namespace SS
                 // First remove the cell
                 cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                cellDictionary.Add(name, new Cell(name, formula, lookup));
+                cellDictionary.Add(name.ToUpper(), new Cell(name, formula, lookup));
 
             }
             else
