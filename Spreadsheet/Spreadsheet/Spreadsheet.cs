@@ -52,19 +52,20 @@ namespace SS
             // Setting up the delegate to perform the lookup in the evaluation of each cell
             Formulas.Lookup l = new Formulas.Lookup(lookup);
             
+            // Setting up class variables
             this.nameOfCell = NameOfCell;
             this.content = Content;
 
+            // If we have a formula or a double we can evaluate the method and grab its value for our
+            // class variable value
             if (content is Formula || content is double)
             {
                 Formula f = new Formula(content.ToString());
-                this.value = (object)f.Evaluate(l); //TODO: how to make the delegate work
+                this.value = (object)f.Evaluate(l); 
             }
+            // else the content and the value are simply a string and the same
             else { value = content; }
         }
-
-        //TODO: we need to integrate evaluate method
-        //TODO: how do we deal with capitalization?
 
         /// <summary>
         /// Returns the name of the cell
