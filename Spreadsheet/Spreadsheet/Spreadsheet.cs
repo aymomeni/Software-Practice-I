@@ -47,11 +47,7 @@ namespace SS
         /// <param name="NameOfCell"></param>
         /// <param name="Content"></param>
         public Cell(String NameOfCell, Object Content, Func<string, double> lookup)
-        {
-
-            // Setting up the delegate to perform the lookup in the evaluation of each cell
-            //Formulas.Lookup l = new Formulas.Lookup(lookup);
-            
+        {           
             // Setting up class variables
             this.nameOfCell = NameOfCell.ToUpper(); // saving each name in captial case
             this.content = Content;
@@ -207,6 +203,21 @@ namespace SS
         /// See the AbstractSpreadsheet.Save method for the file format specification.
         /// If there's a problem reading source, throws an IOException
         /// If the contents of source is not formatted properly, throws a SpreadsheetReadException
+        /// 
+        /// Sample reading file:
+        ///
+        /// <spreadsheet isvalid="IsValid regex goes here">
+        ///   <cell>
+        ///     <name>
+        ///       cell name goes here
+        ///     </name>
+        ///     <contents>
+        ///       cell contents goes here
+        ///     </contents>
+        ///   </cell>
+        /// </spreadsheet>
+        ///
+        /// The value of the isvalid attribute should be IsValid.ToString()
         /// </summary>
         public Spreadsheet(TextReader source)
         {
@@ -226,7 +237,11 @@ namespace SS
                     {
                         if (xmlReader.IsStartElement())
                         {
-                            if (xmlReader.Name.Equals("cell"))
+                            if (xmlReader.Name.Equals("spreadsheet"))
+                            {
+                                isValid = new Regex(xmlReader.GetAttribute("isvalid"));
+                            }
+                            else if (xmlReader.Name.Equals("cell"))
                             {
                                 xmlReader.Read();
                                 tempCellName = xmlReader.Value;
@@ -234,7 +249,7 @@ namespace SS
                                if (!nameValidation(tempCellName))
                                { throw new InvalidNameException(); }
                             }
-                            else if(xmlReader.Name.Equals("content"))                               
+                            else if(xmlReader.Name.Equals("contents"))                               
                                 xmlReader.Read();
                                 tempContent = xmlReader.Value;
                                 SetContentsOfCell(tempCellName, tempContent);
@@ -285,35 +300,50 @@ namespace SS
                 using (XmlWriter writer = XmlWriter.Create(dest))
                 {
                     writer.WriteStartDocument();
-                    writer.WriteStartElement("spreadsheet isvalid=", isValid.ToString());
+                    writer.WriteStartElement("spreadsheet");
+                    writer.WriteAttributeString("isvalid", isValid.ToString());
 
                     foreach (String s in this.GetNamesOfAllNonemptyCells())
                     {
                         Cell c;
                         if (cellDictionary.TryGetValue(s, out c))
                         {
-
-                            writer.WriteStartElement("cell");
                             // Writing the name of each cell 
-                            writer.WriteElementString("name", c.GetName()); // must be the name after it has beeen capitalized
-                            writer.WriteEndElement(); // ending cellname
+                            writer.WriteStartElement("cell");
+
+                            writer.WriteElementString("name", s); // must be the name after it has beeen capitalized
+
+                            // grabing the element from our cell dictionary for type checking
+                            object check = cellDictionary[s].GetContent();
+
+                            // if our check reveals a formula we simply use the formula toString() method
+                            if (check is Formula)
+                            {
+                                writer.WriteElementString("contents", "=" + check.ToString());
+                            }
+                            // else if its a double or any other string we simply use the inherited toString() method
+                            else
+                            {
+                                writer.WriteElementString("contents", check.ToString());
+                            }
+                            writer.WriteEndElement(); // ending cell
 
                             //TODO: Still need checking for types
 
                             // Writing the cell content 
-                            writer.WriteElementString("content", c.GetContent().ToString()); // must be modified to write content
-                            writer.WriteEndElement(); // ending cellcontent
-
-                            // ending cell
-                            writer.WriteEndElement();
+                            writer.WriteElementString("contents", c.GetContent().ToString()); // must be modified to write content
+                            writer.WriteEndElement(); // ending cellcontent                    
                         }
                     }
+                    // ending cell
+                    writer.WriteEndElement();
                     writer.WriteEndDocument();
+                    writer.Close();
                 }
             }
             catch (IOException)
             {
-                throw new IOException("There were problems writing to the destination TextWriter");
+                throw new IOException("There was a problem writing to the destination TextWriter");
             }
         }
 
@@ -376,21 +406,27 @@ namespace SS
             if (content == null)
             { throw new ArgumentNullException();}
 
+            // checking for the validity of the name parameter
+            if (!nameValidation(name)) { throw new InvalidNameException(); }
+
             //name is converted to upper
             name = name.ToUpper();
-            
+
             Changed = true;
 
+            // checkdouble is used for the parse checking
             Double checkdouble = 0.0;
 
-            // checking for the validity of the name parameter
-            if(!nameValidation(name)){ throw new InvalidNameException(); }
-            
+            // if content begins with the character '=', an attempt is made
+            // to parse the remainder of content into a Formula f using the Formula
+            // constructor
             if(content.StartsWith("=")){
 
                 Formula f = new Formula(content.Substring(1));
                 return SetCellContents(name, f);
 
+            // if content parses as a double, the contents of the named
+            // cell becomes that double.
             } else if(Double.TryParse(content, out checkdouble)){
                 return SetCellContents(name, checkdouble);
             }
@@ -408,8 +444,6 @@ namespace SS
         /// <returns></returns>
         private double lookup(string nameOfCell)
         {
-            //TODO: Exceptions?
-
             //name is converted to upper
             nameOfCell = nameOfCell.ToUpper();
 
@@ -420,7 +454,7 @@ namespace SS
                 return (double)tempCell.GetValue();
             }
 
-            return 0.0; // TODO: Exception?
+            return 0.0; //TODO: what to do here with exceptions?
         }
 
 
@@ -451,12 +485,12 @@ namespace SS
         {
             Object contents = "";
 
-            //name is converted to upper
-            name = name.ToUpper();
-
             // Checking if the name is valid
             if (!nameValidation(name))
             { throw new InvalidNameException(); }
+
+            //name is converted to upper
+            name = name.ToUpper();
             
             // Grabbing the the cells value based on the parameter key
             if (cellDictionary.ContainsKey(name))
@@ -498,7 +532,7 @@ namespace SS
                 // First remove the cell
                 cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                cellDictionary.Add(name.ToUpper(), new Cell(name, number, lookup));
+                cellDictionary.Add(name, new Cell(name, number, lookup));
             }
             else
             {
@@ -551,7 +585,7 @@ namespace SS
                 // First remove the cell
                 cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                cellDictionary.Add(name.ToUpper(), new Cell(name, text, lookup));
+                cellDictionary.Add(name, new Cell(name, text, lookup));
 
             }
             else
@@ -622,7 +656,7 @@ namespace SS
                 // First remove the cell
                 cellDictionary.Remove(name);
                 // create a new cell that contains the original name, with the new content
-                cellDictionary.Add(name.ToUpper(), new Cell(name, formula, lookup));
+                cellDictionary.Add(name, new Cell(name, formula, lookup));
 
             }
             else
@@ -660,6 +694,9 @@ namespace SS
             if (!(nameValidation(name)))
             { throw new ArgumentNullException(); }
 
+            //name is converted to upper
+            name = name.ToUpper();
+
             // returning a IEnumerable of all the direct dependents of the given cell name
             return DGSpreadsheet.GetDependees(name);
         }
@@ -676,6 +713,9 @@ namespace SS
             // Checking if the name is null
             if (name == null)
             { return false; }
+
+            //name is converted to upper
+            name = name.ToUpper();
 
             // Using a regular expression match to identify if the given name is 
             // valid (based on the class description of what a valid name is)

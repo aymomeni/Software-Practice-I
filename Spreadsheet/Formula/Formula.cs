@@ -35,6 +35,10 @@ namespace Formulas
     /// </summary>
     public class Formula
     {
+
+        // A string representing formula and used for the toString() method
+        private string formulaString;
+
         // the string array tokens holds all of the tokens for the formula class's methods to use
         private List<String> tokens = new List<String>();
         private Func<string, string> N; // Normalize delegate
@@ -155,6 +159,7 @@ namespace Formulas
                         }
 
                         // adding the normalized and varified variable to our tokens
+                        formulaString += s; // building the string representation of formula
                         tokens.Add(s);
                         lastToken = s;
                         continue;
@@ -163,7 +168,7 @@ namespace Formulas
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
                     ////////////////////////////// MAIN DELEGATE PROCESSING END ///////////////////////////////////////
                     ///////////////////////////////////////////////////////////////////////////////////////////////////
-
+                    formulaString += s; // building the string representation of formula
                     tokens.Add(s);
                     lastToken = s;
 
@@ -509,6 +514,19 @@ namespace Formulas
                 }
             }
             return variables;
+        }
+
+
+        /// <summary>
+        /// Returns a string representation of the this formula
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            formulaString = N(formulaString); // normalizing formula if need be
+            formulaString.Trim().Replace(" ", string.Empty); //removing empty spaces from the formula
+
+            return N(formulaString);
         }
     }
 
