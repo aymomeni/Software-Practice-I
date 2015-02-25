@@ -57,7 +57,14 @@ namespace SS
             if (content is Formula || content is double)
             {
                 Formula f = new Formula(content.ToString());
-                this.value = (object)f.Evaluate(s => lookup(nameOfCell)); 
+                try
+                {
+                    this.value = (object)f.Evaluate(s => lookup(nameOfCell));
+                }
+                catch (FormulaEvaluationException)
+                {
+                    this.value = new FormulaError();
+                }
             }
             // else the content and the value are simply a string and the same
             else { value = content; }
@@ -156,7 +163,7 @@ namespace SS
         private Dictionary<String, Cell> cellDictionary;
 
         // Class level regular expression
-        private Regex isValid; 
+        private Regex isValid = new Regex(@"^[a-zA-Z]+[1-9]+[0-9]*$"); // Setting it to the standard conditions
 
         // Boolean expression that keeps track of if a regular expression had been passed in
         private Boolean isValidBool = true; // initially set to true, expecting that there is a isValid variable
@@ -225,6 +232,7 @@ namespace SS
             // Local variables to hold the xml data (name of cell and content of cell)
             string tempCellName = "";
             string tempContent = "";
+            isValidBool = true;
 
             // must grab the regular expression from the text reader
             // then create a spreadsheet based on source
@@ -240,24 +248,37 @@ namespace SS
                             if (xmlReader.Name.Equals("spreadsheet"))
                             {
                                 isValid = new Regex(xmlReader.GetAttribute("isvalid"));
+                                continue;
                             }
-                            else if (xmlReader.Name.Equals("cell"))
+
+                            if (xmlReader.Name.Equals("cell"))
                             {
-                                xmlReader.Read();
-                                tempCellName = xmlReader.Value;
-                                // Checking if the name is valid
-                               if (!nameValidation(tempCellName))
-                               { throw new InvalidNameException(); }
+                                continue;
                             }
-                            else if(xmlReader.Name.Equals("contents"))                               
-                                xmlReader.Read();
-                                tempContent = xmlReader.Value;
-                                SetContentsOfCell(tempCellName, tempContent);
+
+                            switch (xmlReader.Name.ToString())
+                            {
+                                case "name":
+                                    tempCellName = xmlReader.ReadString();
+                                    // Checking if the name is valid
+                                    if (!nameValidation(tempCellName))
+                                    { throw new InvalidNameException(); }
+                                    break;
+
+                                case "contents":
+                                    tempContent = xmlReader.ReadString();
+                                    SetContentsOfCell(tempCellName, tempContent);
+                                    break;
+
                             }
                         }
                     }
-            } catch (IOException) { throw new IOException("There was an issue reading from the source file"); }
+                }
+            }
+            catch (IOException) { throw new IOException("There was an issue reading from the source file"); }
+        
         }
+        
 
         // ADDED FOR PS6
         /// <summary>
@@ -326,17 +347,10 @@ namespace SS
                             {
                                 writer.WriteElementString("contents", check.ToString());
                             }
-                            writer.WriteEndElement(); // ending cell
-
-                            //TODO: Still need checking for types
-
-                            // Writing the cell content 
-                            writer.WriteElementString("contents", c.GetContent().ToString()); // must be modified to write content
-                            writer.WriteEndElement(); // ending cellcontent                    
+                            writer.WriteEndElement(); // ending cell                   
                         }
                     }
                     // ending cell
-                    writer.WriteEndElement();
                     writer.WriteEndDocument();
                     writer.Close();
                 }
@@ -633,15 +647,18 @@ namespace SS
 
             try
             {
-                // Remove all the dependents of the cell whose value is set
-                DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
-                
-                // we need to go through the variables of formula and make sure 
-                // any additional dependencies are inserted into our Dependency Graph of cells
-                foreach(String s in formula.GetVariables())
-                {
-                    DGSpreadsheet.AddDependency(name, s);
-                }
+
+                    // Remove all the dependents of the cell whose value is set
+                    DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
+
+                    // we need to go through the variables of formula and make sure 
+                    // any additional dependencies are inserted into our Dependency Graph of cells
+                    foreach (String s in formula.GetVariables())
+                    {
+                        DGSpreadsheet.AddDependency(name, s);
+                    }
+ 
+
                 // Grab all of the cells that are dependent on the cell that changed
                 recalculate = new HashSet<string>(GetCellsToRecalculate(name));
             }

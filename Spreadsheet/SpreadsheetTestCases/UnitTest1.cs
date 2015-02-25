@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using Formulas;
 using SS;
-
+using System.IO;
 
 /**
  * PS5 - Ali Momeni - February 14, 2015 
@@ -136,72 +136,86 @@ namespace SpreadsheetTestCases
         }
 
 
-        //[TestMethod]
-        //public void SpreadSheetTestMethod12()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("A1", "2+3");
-        //    s.SetCellContents("B5", "5+3");
-        //    s.SetCellContents("B2", "9+3");
-        //    s.SetCellContents("C234", "22+3");
-        //    s.SetCellContents("C234", "22+3");
-        //    HashSet<String> test = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
-        //    HashSet<string> comparison = new HashSet<string>() { "A1", "B5", "B2", "C234" };
+        [TestMethod]
+        public void SpreadSheetTestMethod12()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A1", "=2+3");
+            s.SetContentsOfCell("B5", "=5+3");
+            s.SetContentsOfCell("b2", "=9+3");
+            s.SetContentsOfCell("C234", "=22+3");
+            s.SetContentsOfCell("C234", "=22+3");
+            HashSet<String> test = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            HashSet<string> comparison = new HashSet<string>() { "A1", "B5", "B2", "C234" };
 
-        //    Assert.IsTrue(comparison.SetEquals(test));
-        //}
-
-
-        //[TestMethod]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void SpreadSheetTestMethod13()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("A", "2+B5");
-
-        //}
+            Assert.IsTrue(comparison.SetEquals(test));
+        }
 
 
-        //[TestMethod]
-        //public void SpreadSheetTestMethod14()
-        //{
-        //    Spreadsheet ss = new Spreadsheet();
-        //    ss.SetCellContents("B1", 10);
-        //    ss.SetCellContents("B1", 5);
-        //    Assert.AreEqual(ss.GetCellContents("B1"), 5.0);
-        //}
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SpreadSheetTestMethod13()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A", "=2+B5");
+
+        }
 
 
-        //[TestMethod]
-        //public void SpreadSheetTestMethod15()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("A1", 10);
-        //    s.GetNamesOfAllNonemptyCells();
-        //}
+        [TestMethod]
+        public void SpreadSheetTestMethod14()
+        {
+            Spreadsheet ss = new Spreadsheet();
+            ss.SetContentsOfCell("B1", "10");
+            ss.SetContentsOfCell("B1", "5");
+            Assert.AreEqual(ss.GetCellContents("B1"), 5.0);
+        }
 
 
-        //[TestMethod]
-        //[ExpectedException(typeof(CircularException))]
-        //public void SpreadSheetTestMethod16()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("A1", new Formula("2+C234"));
-        //    s.SetCellContents("B5", new Formula("5+A1"));
-        //    s.SetCellContents("B2", new Formula("9+B5"));
-        //    s.SetCellContents("C234", new Formula("22+B2"));
-           
-        //}
+        [TestMethod]
+        public void SpreadSheetTestMethod15()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A1", "10");
+            s.GetNamesOfAllNonemptyCells();
+        }
 
 
-        //[TestMethod]
-        //[ExpectedException(typeof(ArgumentNullException))]
-        //public void SpreadSheetTestMethod17()
-        //{
-        //    Spreadsheet ss = new Spreadsheet();
-        //    ss.SetCellContents("A1", (Formula)null);
-        //}
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SpreadSheetTestMethod16()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A1", "2");
+            s.SetContentsOfCell("B5", "5");
+            s.SetContentsOfCell("B5", "=A1");
+            s.SetContentsOfCell("A1", "=B5");
+        }
 
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void SpreadSheetTestMethod17()
+        {
+            Spreadsheet ss = new Spreadsheet();
+            ss.SetContentsOfCell("A1", null);
+        }
+
+        [TestMethod]
+        public void SpreadSheetTestMethod18()
+        {
+            Spreadsheet ss = new Spreadsheet();
+            ss.SetContentsOfCell("A1", "=55+A2");
+            TextWriter t = File.CreateText("test1.xml");
+            ss.Save(t);
+
+            TextReader r = File.OpenText("test2.xml");
+
+            Spreadsheet ss1 = new Spreadsheet(r);
+            HashSet<String> test = new HashSet<string>(ss1.GetNamesOfAllNonemptyCells());
+            HashSet<string> comparison = new HashSet<string>() { "A1"};
+
+        }
 
         //[TestMethod]
         //[ExpectedException(typeof(InvalidNameException))]
