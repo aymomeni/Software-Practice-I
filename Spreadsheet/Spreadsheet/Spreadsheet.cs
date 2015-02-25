@@ -270,7 +270,6 @@ namespace SS
                                     tempContent = xmlReader.ReadString();
                                     SetContentsOfCell(tempCellName, tempContent);
                                     break;
-
                             }
                         }
                     }
@@ -459,6 +458,8 @@ namespace SS
         /// <returns></returns>
         private double lookup(string nameOfCell)
         {
+            if(!cellDictionary.ContainsKey(nameOfCell))
+            { throw new FormulaEvaluationException("The variable could not be found in the spreadsheet"); }
             //name is converted to upper
             nameOfCell = nameOfCell.ToUpper();
 
@@ -648,10 +649,16 @@ namespace SS
 
             try
             {
+                if (cellDictionary.ContainsKey(name))
+                {
+                    try
+                    {
+                        // Remove all the dependents of the cell whose value is set
+                        DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
+                    }
+                    catch (NullReferenceException) {  }
 
-                    // Remove all the dependents of the cell whose value is set
-                    DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
-
+                }
                     // we need to go through the variables of formula and make sure 
                     // any additional dependencies are inserted into our Dependency Graph of cells
                     foreach (String s in formula.GetVariables())
@@ -683,6 +690,16 @@ namespace SS
                 // dependencies to worry about and we can simply return a 
                 // hashset with the new cell name and insert the new cell and its content
                 cellDictionary.Add(name, new Cell(name, (Object)formula, lookup));
+            }
+
+            foreach(String s in recalculate)
+            {
+                if (cellDictionary.ContainsKey(s) && cellDictionary[s].GetContent() is Formula)
+                {
+                    Cell temp = new Cell(s, cellDictionary[s].GetContent(), lookup);
+                    cellDictionary.Remove(s);
+                    cellDictionary.Add(s, temp);
+                }
             }
 
             return recalculate;

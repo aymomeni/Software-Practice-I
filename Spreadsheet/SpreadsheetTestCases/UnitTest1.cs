@@ -413,14 +413,14 @@ namespace SpreadsheetTestCases
             s.SetContentsOfCell("AZ", "2");
         }
 
-        [TestMethod()]
-        public void TestSP14()
-        {
-            AbstractSpreadsheet s = new Spreadsheet();
-            s.SetContentsOfCell("Z7", "3");
-            Formula f = (Formula)s.GetCellContents("Z7");
-            Assert.AreEqual(3, f.Evaluate(x => 0));
-        }
+        //[TestMethod()]
+        //public void TestSP14()
+        //{
+        //    AbstractSpreadsheet s = new Spreadsheet();
+        //    s.SetContentsOfCell("Z7", "3");
+        //    Formula f = (Formula)s.GetCellContents("Z7");
+        //    Assert.AreEqual(3, f.Evaluate(x => 0));
+        //}
 
         //// CIRCULAR FORMULA DETECTION
         //[TestMethod()]
