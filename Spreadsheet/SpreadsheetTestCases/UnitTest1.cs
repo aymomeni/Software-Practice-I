@@ -217,41 +217,41 @@ namespace SpreadsheetTestCases
 
         }
 
-        //[TestMethod]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void SpreadSheetTestMethod18()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("1A", 10);
-        //}
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SpreadSheetTestMethod19()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("1A", "10");
+        }
 
 
-        //[TestMethod]
-        //[ExpectedException(typeof(ArgumentNullException))]
-        //public void SpreadSheetTestMethod19()
-        //{
-        //    Spreadsheet ss = new Spreadsheet();
-        //    ss.SetCellContents("A1", (String)null);
-        //}
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void SpreadSheetTestMethod20()
+        {
+            Spreadsheet ss = new Spreadsheet();
+            ss.SetContentsOfCell("A1", (String)null);
+        }
 
 
-        //[TestMethod]
-        //public void SpreadSheetTestMethod20()
-        //{
-        //    Spreadsheet ss = new Spreadsheet();
-        //    ss.SetCellContents("B1", "Boooom");
-        //    ss.SetCellContents("B1", "DongDong");
-        //    Assert.AreEqual(ss.GetCellContents("B1"), "DongDong");
-        //}
+        [TestMethod]
+        public void SpreadSheetTestMethod21()
+        {
+            Spreadsheet ss = new Spreadsheet();
+            ss.SetContentsOfCell("B1", "Boooom");
+            ss.SetContentsOfCell("B1", "DongDong");
+            Assert.AreEqual(ss.GetCellContents("B1"), "DongDong");
+        }
 
 
-        //[TestMethod]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void Test21()
-        //{
-        //    Spreadsheet ss = new Spreadsheet();
-        //    ss.SetCellContents(null, 10);
-        //}
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void Test21()
+        {
+            Spreadsheet ss = new Spreadsheet();
+            ss.SetContentsOfCell(null, "10");
+        }
 
 
         //[TestMethod]
@@ -268,158 +268,159 @@ namespace SpreadsheetTestCases
         //}
 
 
-        //[TestMethod]
-        //public void SpreadSheetTestMethod23()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("A1", new Formula("2+C234"));
-        //    s.SetCellContents("B5", new Formula("5+A1"));
-        //    s.SetCellContents("B2", new Formula("9+B5"));
-        //    s.SetCellContents("C234", new Formula("22"));
+        [TestMethod]
+        public void SpreadSheetTestMethod22()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A1", "=2+C234");
+            s.SetContentsOfCell("B5", "=5+A1");
+            s.SetContentsOfCell("B2", "=9+B5");
+            s.SetContentsOfCell("C234","22");
 
-        //}
+        }
 
-        //// Couple of minor stress tests using formula and double methods
+        // Couple of minor stress tests using formula and double methods
 
-        //[TestMethod]
-        //public void SpreadSheetTestMethod24()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
+        [TestMethod]
+        public void SpreadSheetTestMethod24()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
 
-        //    for (int i = 1; i < 1000; i++ )
-        //        s.SetCellContents("A" + "" + i, new Formula("2+C234" + i));
-        //    HashSet<String> test = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
-        //    Assert.IsTrue(test.Count == 999);
+            for (int i = 1; i < 1000; i++)
+                s.SetContentsOfCell("A" + "" + i, "=2+C234" + i);
+            HashSet<String> test = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(test.Count == 999);
 
-        //}
+        }
 
 
-        //[TestMethod]
-        //public void SpreadSheetTestMethod25()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
+        [TestMethod]
+        public void SpreadSheetTestMethod25()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
 
-        //    for (int i = 1; i < 1000; i++)
-        //        s.SetCellContents("A" + "" +i, i);
-        //    HashSet<String> test = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
-        //    Assert.IsTrue(test.Count == 999);
-        //}
+            for (int i = 1; i < 1000; i++)
+                s.SetContentsOfCell("A" + "" + i, "i");
+            HashSet<String> test = new HashSet<string>(s.GetNamesOfAllNonemptyCells());
+            Assert.IsTrue(test.Count == 999);
+        }
 
-        //// EMPTY SPREADSHEETS
-        //[TestMethod()]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void TestSP1()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.GetCellContents(null);
-        //}
+        // EMPTY SPREADSHEETS
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestSP1()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.GetCellContents(null);
+        }
 
-        //[TestMethod()]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void TestSP2()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.GetCellContents("AA");
-        //}
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestSP2()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.GetCellContents("AA");
+        }
 
-        //[TestMethod()]
-        //public void TestSP3()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    Assert.AreEqual("", s.GetCellContents("A2"));
-        //}
+        [TestMethod()]
+        public void TestSP3()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            Assert.AreEqual("", s.GetCellContents("A2"));
+        }
 
-        //// SETTING CELL TO A DOUBLE
-        //[TestMethod()]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void TestSP4()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents(null, 1.5);
-        //}
+        // SETTING CELL TO A DOUBLE
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestSP4()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell(null, "1.5");
+        }
 
-        //[TestMethod()]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void TestSP5()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("A1A", 1.5);
-        //}
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestSP5()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A1A", "1.5");
+        }
 
-        //[TestMethod()]
-        //public void TestSP6()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("Z7", 1.5);
-        //    Assert.AreEqual(1.5, (double)s.GetCellContents("Z7"), 1e-9);
-        //}
+        [TestMethod()]
+        public void TestSP6()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("Z7", "1.5");
+            Assert.AreEqual(1.5, (double)s.GetCellContents("Z7"), 1e-9);
+        }
 
         //// SETTING CELL TO A STRING
-        //[TestMethod()]
-        //[ExpectedException(typeof(ArgumentNullException))]
-        //public void TestSP7()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("A8", (string)null);
-        //}
+        [TestMethod()]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void TestSP7()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A8", (string)null);
+        }
 
-        //[TestMethod()]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void TestSP8()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents(null, "hello");
-        //}
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestSP8()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell(null, "hello");
+        }
 
-        //[TestMethod()]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void TestSP9()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("AZ", "hello");
-        //}
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestSP9()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("AZ", "hello");
+        }
 
-        //[TestMethod()]
-        //public void TestSP10()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("Z7", "hello");
-        //    Assert.AreEqual("hello", s.GetCellContents("Z7"));
-        //}
+        [TestMethod()]
+        public void TestSP10()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("Z7", "hello");
+            Assert.AreEqual("hello", s.GetCellContents("Z7"));
+        }
 
         //// SETTING CELL TO A FORMULA
-        //[TestMethod()]
-        //[ExpectedException(typeof(ArgumentNullException))]
-        //public void TestSP11()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("A8", (Formula)null);
-        //}
+        [TestMethod()]
+        public void TestSP11()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A8", "5");
+            s.SetContentsOfCell("B8", "=A8");
+            Assert.AreEqual((double)5, s.GetCellContents("B8")); 
+        }
 
-        //[TestMethod()]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void TestSP12()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents(null, new Formula("2"));
-        //}
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestSP12()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell(null, "2");
+        }
 
-        //[TestMethod()]
-        //[ExpectedException(typeof(InvalidNameException))]
-        //public void TestSP13()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("AZ", new Formula("2"));
-        //}
+        [TestMethod()]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void TestSP13()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("AZ", "2");
+        }
 
-        //[TestMethod()]
-        //public void TestSP14()
-        //{
-        //    AbstractSpreadsheet s = new Spreadsheet();
-        //    s.SetCellContents("Z7", new Formula("3"));
-        //    Formula f = (Formula)s.GetCellContents("Z7");
-        //    Assert.AreEqual(3, f.Evaluate(x => 0));
-        //}
+        [TestMethod()]
+        public void TestSP14()
+        {
+            AbstractSpreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("Z7", "3");
+            Formula f = (Formula)s.GetCellContents("Z7");
+            Assert.AreEqual(3, f.Evaluate(x => 0));
+        }
 
         //// CIRCULAR FORMULA DETECTION
         //[TestMethod()]

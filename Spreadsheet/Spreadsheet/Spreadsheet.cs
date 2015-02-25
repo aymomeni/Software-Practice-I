@@ -59,7 +59,8 @@ namespace SS
                 Formula f = new Formula(content.ToString());
                 try
                 {
-                    this.value = (object)f.Evaluate(s => lookup(nameOfCell));
+                    this.value = (object)f.Evaluate(s => lookup(s));
+                    content = value; 
                 }
                 catch (FormulaEvaluationException)
                 {
@@ -445,7 +446,7 @@ namespace SS
                 return SetCellContents(name, checkdouble);
             }
 
-            return new HashSet<String>();
+            return SetCellContents(name, content);
         }
 
 
