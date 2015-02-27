@@ -64,6 +64,7 @@ namespace SS
                 }
                 catch (FormulaEvaluationException)
                 {
+
                     this.value = new FormulaError();
                 }
             }
@@ -420,6 +421,8 @@ namespace SS
             if (content == null)
             { throw new ArgumentNullException();}
 
+            isValidBool = true;
+
             // checking for the validity of the name parameter
             if (!nameValidation(name)) { throw new InvalidNameException(); }
 
@@ -435,7 +438,7 @@ namespace SS
             // to parse the remainder of content into a Formula f using the Formula
             // constructor
             if(content.StartsWith("=")){
-
+                //Formula f = new Formula(content, s => s.ToUpper(), s => isValid.IsMatch(content.Substring(1)));
                 Formula f = new Formula(content.Substring(1));
                 return SetCellContents(name, f);
 
@@ -762,9 +765,8 @@ namespace SS
                 if (isValidBool)
                 {
                     Match matchIsValid = isValid.Match(name);
-                    if (match.Success)
-                    { return true; } // if it machesthe is valid regex we return true
-                    else { return false; } // if the name does not mach is valid we return false
+                    if (!matchIsValid.Success)
+                    { return false; } // if it machesthe is valid regex we return true
                 }
 
                 return true;
