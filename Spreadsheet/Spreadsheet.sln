@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spreadsheet", "Spreadsheet\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetTestCases", "SpreadsheetTestCases\SpreadsheetTestCases.csproj", "{12AEF6FA-27FD-4028-9266-97CCE2172D00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpreadsheetGUI", "SpreadsheetGUI\SpreadsheetGUI.csproj", "{889DC8A3-6E24-4197-85DB-B986AFE4A4F5}"
-EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -51,10 +49,6 @@ Global
 		{12AEF6FA-27FD-4028-9266-97CCE2172D00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{12AEF6FA-27FD-4028-9266-97CCE2172D00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{12AEF6FA-27FD-4028-9266-97CCE2172D00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{889DC8A3-6E24-4197-85DB-B986AFE4A4F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{889DC8A3-6E24-4197-85DB-B986AFE4A4F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{889DC8A3-6E24-4197-85DB-B986AFE4A4F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{889DC8A3-6E24-4197-85DB-B986AFE4A4F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
