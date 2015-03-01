@@ -19,6 +19,8 @@ namespace SpreadsheetTestCases
     public class UnitTest1
     {
 
+
+
         // Accepts all strings
         private const string ALL = "^.*$";
 

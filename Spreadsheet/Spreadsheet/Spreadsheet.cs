@@ -8,7 +8,7 @@ using Dependencies;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Xml;
-using Formulas;
+
 
 /**
  * PS6 - Ali Momeni - February 23, 2015 
@@ -57,14 +57,13 @@ namespace SS
             if (content is Formula || content is double)
             {
                 Formula f = new Formula(content.ToString());
+
                 try
                 {
-                    this.value = (object)f.Evaluate(s => lookup(s));
-                    content = value; 
+                    this.value = f.Evaluate(s => lookup(s));
                 }
                 catch (FormulaEvaluationException)
                 {
-
                     this.value = new FormulaError();
                 }
             }
@@ -230,6 +229,9 @@ namespace SS
         /// </summary>
         public Spreadsheet(TextReader source)
         {
+            // Initiating our DependencyGraph and our Cells Dictionary
+            DGSpreadsheet = new DependencyGraph();
+            cellDictionary = new Dictionary<string, Cell>();
 
             // Local variables to hold the xml data (name of cell and content of cell)
             string tempCellName = "";
@@ -247,19 +249,20 @@ namespace SS
                     {
                         if (xmlReader.IsStartElement())
                         {
-                            if (xmlReader.Name.Equals("spreadsheet"))
+                           switch (xmlReader.Name.ToString())
                             {
+                            
+                               case "spreadsheet":
+                            
                                 isValid = new Regex(xmlReader.GetAttribute("isvalid"));
-                                continue;
-                            }
+                                    break;
+                            
 
-                            if (xmlReader.Name.Equals("cell"))
-                            {
-                                continue;
-                            }
+                               case"cell":
+                                    break;
+                            
 
-                            switch (xmlReader.Name.ToString())
-                            {
+                            
                                 case "name":
                                     tempCellName = xmlReader.ReadString();
                                     // Checking if the name is valid
@@ -271,6 +274,10 @@ namespace SS
                                     tempContent = xmlReader.ReadString();
                                     SetContentsOfCell(tempCellName, tempContent);
                                     break;
+
+                               default:
+                                    throw new SpreadsheetReadException("Error in reading spreadsheet");
+
                             }
                         }
                     }
@@ -423,13 +430,13 @@ namespace SS
 
             isValidBool = true;
 
-            // checking for the validity of the name parameter
-            if (!nameValidation(name)) { throw new InvalidNameException(); }
-
             //name is converted to upper
             name = name.ToUpper();
 
-            Changed = true;
+            // checking for the validity of the name parameter
+            if (!nameValidation(name)) { throw new InvalidNameException(); }
+
+
 
             // checkdouble is used for the parse checking
             Double checkdouble = 0.0;
@@ -438,6 +445,7 @@ namespace SS
             // to parse the remainder of content into a Formula f using the Formula
             // constructor
             if(content.StartsWith("=")){
+                Changed = true;
                 //Formula f = new Formula(content, s => s.ToUpper(), s => isValid.IsMatch(content.Substring(1)));
                 Formula f = new Formula(content.Substring(1));
                 return SetCellContents(name, f);
@@ -445,10 +453,16 @@ namespace SS
             // if content parses as a double, the contents of the named
             // cell becomes that double.
             } else if(Double.TryParse(content, out checkdouble)){
+                Changed = true;
                 return SetCellContents(name, checkdouble);
             }
+            else
+            {
+                Changed = true;
+                return SetCellContents(name, content);
+            }
 
-            return SetCellContents(name, content);
+            
         }
 
 
@@ -461,10 +475,12 @@ namespace SS
         /// <returns></returns>
         private double lookup(string nameOfCell)
         {
-            if(!cellDictionary.ContainsKey(nameOfCell))
-            { throw new FormulaEvaluationException("The variable could not be found in the spreadsheet"); }
             //name is converted to upper
             nameOfCell = nameOfCell.ToUpper();
+
+            if(!cellDictionary.ContainsKey(nameOfCell))
+            { throw new FormulaEvaluationException("The variable could not be found in the spreadsheet"); }
+            
 
             Cell tempCell = cellDictionary[nameOfCell];
 
@@ -472,8 +488,10 @@ namespace SS
             {
                 return (double)tempCell.GetValue();
             }
-
-            return 0.0; //TODO: what to do here with exceptions?
+            else
+            {
+                throw new FormulaEvaluationException("Lookup could not be properly performed.");
+            }
         }
 
 
@@ -532,13 +550,6 @@ namespace SS
         protected override ISet<String> SetCellContents(String name, double number)
         {
             HashSet<String> recalculate;
-            
-            // Checking if the name is valid
-            if(!nameValidation(name))
-            { throw new InvalidNameException(); }
-
-            //name is converted to upper
-            name = name.ToUpper();
 
             // Remove all the dependents of the cell whose value is set
             DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
@@ -560,8 +571,18 @@ namespace SS
                 // hashset with the new cell name and insert the new cell and its content
                 cellDictionary.Add(name, new Cell(name, (Object)number, lookup));
             }
-       
-                return recalculate;   
+
+            foreach (String s in recalculate)
+            {
+                if (cellDictionary[s].GetContent() is Formula)
+                {
+                    Cell temp = new Cell(s, cellDictionary[s].GetContent(), lookup);
+                    cellDictionary.Remove(s);
+                    cellDictionary.Add(s, temp);
+                }
+            }
+   
+            return recalculate;   
         }
 
         /// <summary>
@@ -579,24 +600,29 @@ namespace SS
         /// </summary>
         protected override ISet<String> SetCellContents(String name, String text)
         {
+
+            if (text == "")
+            {
+                // Grabbing the the cells value based on the parameter key
+                if (cellDictionary.ContainsKey(name))
+                {
+                    // First remove the cell
+                    cellDictionary.Remove(name);
+                    // Remove all the dependents of the cell whose value is set
+                    DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
+
+                }
+                return new HashSet<string>(GetCellsToRecalculate(name));
+            }
+
             HashSet<String> recalculate = new HashSet<string>();
-
-            // Checking if the text is null
-            if (text == null)
-            { throw new ArgumentNullException(); }
-
-            // Checking if the name is valid
-            if (!nameValidation(name))
-            { throw new InvalidNameException(); }
-
-            //name is converted to upper
-            name = name.ToUpper();
 
             // Remove all the dependents of the cell whose value is set
             DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
 
             // Grab all of the cells that are dependent on the cell that changed
             recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+
 
             // Grabbing the the cells value based on the parameter key
             if (cellDictionary.ContainsKey(name))
@@ -607,8 +633,7 @@ namespace SS
                 cellDictionary.Add(name, new Cell(name, text, lookup));
 
             }
-            else
-            {
+            else {
                 // if the cell name does not exist, we don't have any
                 // dependencies to worry about and we can simply return a 
                 // hashset with the new cell name and insert the new cell and its content
@@ -637,44 +662,32 @@ namespace SS
         protected override ISet<String> SetCellContents(String name, Formula formula)
         {
 
-            //Checking if formula is null
-            if (formula == null)
-            { throw new ArgumentNullException(); }
+            HashSet<String> recalculate = new HashSet<string>();
 
-            // Checking if the name is valid
-            if (!nameValidation(name))
-            { throw new InvalidNameException(); }
-
-            //name is converted to upper
-            name = name.ToUpper();
-
-            HashSet<String> recalculate;
+            HashSet<string> tempDependents = new HashSet<string>(DGSpreadsheet.GetDependents(name));
 
             try
             {
+
                 if (cellDictionary.ContainsKey(name))
                 {
-                    try
-                    {
-                        // Remove all the dependents of the cell whose value is set
-                        DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
-                    }
-                    catch (NullReferenceException) {  }
-
+                    DGSpreadsheet.ReplaceDependents(name, new HashSet<string>());
                 }
-                    // we need to go through the variables of formula and make sure 
-                    // any additional dependencies are inserted into our Dependency Graph of cells
-                    foreach (String s in formula.GetVariables())
-                    {
-                        DGSpreadsheet.AddDependency(name, s);
-                    }
- 
-
+                    
+                // we need to go through the variables of formula and make sure 
+                // any additional dependencies are inserted into our Dependency Graph of cells
+                foreach (String s in formula.GetVariables())
+                {
+                    DGSpreadsheet.AddDependency(name, s.ToUpper()); // Careful! This was changed in PS6 Test
+                }
+                    
                 // Grab all of the cells that are dependent on the cell that changed
                 recalculate = new HashSet<string>(GetCellsToRecalculate(name));
+
             }
             catch (CircularException exception)
             {
+                DGSpreadsheet.ReplaceDependents(name, tempDependents);
                 throw exception;
             }
 
@@ -731,9 +744,6 @@ namespace SS
             // checking if parameter name is null
             if (!(nameValidation(name)))
             { throw new ArgumentNullException(); }
-
-            //name is converted to upper
-            name = name.ToUpper();
 
             // returning a IEnumerable of all the direct dependents of the given cell name
             return DGSpreadsheet.GetDependees(name);
