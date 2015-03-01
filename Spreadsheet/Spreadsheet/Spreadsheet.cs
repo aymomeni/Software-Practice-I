@@ -58,6 +58,9 @@ namespace SS
             {
                 Formula f = new Formula(content.ToString());
 
+                // We want to immediately evaluate the cell contents,
+                // and if we have difficulty figuring out its value by using evaluate
+                // we simply store a formula error in value for the time being
                 try
                 {
                     this.value = f.Evaluate(s => lookup(s));
@@ -238,13 +241,15 @@ namespace SS
             string tempContent = "";
             isValidBool = true;
 
-            // must grab the regular expression from the text reader
-            // then create a spreadsheet based on source
-            // create a boolean
+            // Using xml processing to break the different elements of a source reader into
+            // usuable information to make a spreadsheet. If we have difficulty reading the input file
+            // we throw a IOException
             try
             {
                 using (XmlReader xmlReader = XmlReader.Create(source))
                 {
+                    // if any elements read are not in an appropriate format,
+                    // we throw a Spreadsheet read exception
                     try
                     {
                         while (xmlReader.Read())
@@ -253,25 +258,28 @@ namespace SS
                             {
                                 switch (xmlReader.Name.ToString())
                                 {
-
+                                    // Checking for the title of the xml file and grabbing
+                                    // a regex expression if one exists
                                     case "spreadsheet":
 
                                         isValid = new Regex(xmlReader.GetAttribute("isvalid"));
                                         break;
 
-
+                                    // cell is checked only for formatting purposes that were given
+                                    // in the assignment description
                                     case "cell":
                                         break;
 
 
-
+                                    // Grabing the name of the cell (stored in a temp variable)
                                     case "name":
                                         tempCellName = xmlReader.ReadString();
                                         // Checking if the name is valid
                                         if (!nameValidation(tempCellName))
                                         { throw new InvalidNameException(); }
                                         break;
-
+                                    
+                                    // Grabing the content of the cell and setting a cell using SetContentsOfCell
                                     case "contents":
                                         tempContent = xmlReader.ReadString();
                                         SetContentsOfCell(tempCellName, tempContent);
@@ -335,6 +343,7 @@ namespace SS
             {
                 using (XmlWriter writer = XmlWriter.Create(dest))
                 {
+                    // Writing the xml title with the appropriate regex expression (isValid)
                     writer.WriteStartDocument();
                     writer.WriteStartElement("spreadsheet");
                     writer.WriteAttributeString("isvalid", isValid.ToString());
@@ -453,8 +462,8 @@ namespace SS
             // constructor
             if(content.StartsWith("=")){
                 Changed = true;
-                //Formula f = new Formula(content, s => s.ToUpper(), s => isValid.IsMatch(content.Substring(1)));
-                Formula f = new Formula(content.Substring(1));
+                // We use a validator and normalizer (normalizer = s.ToUpper() and validator is whatever regex given to us)
+                Formula f = new Formula(content.Substring(1), s => s.ToUpper(), s => isValid.Match(s).Success);
                 return SetCellContents(name, f);
 
             // if content parses as a double, the contents of the named
@@ -463,6 +472,7 @@ namespace SS
                 Changed = true;
                 return SetCellContents(name, checkdouble);
             }
+            // else we have text as the content and we simply set it as text
             else
             {
                 Changed = true;
@@ -668,7 +678,8 @@ namespace SS
         /// </summary>
         protected override ISet<String> SetCellContents(String name, Formula formula)
         {
-
+            // recalculate is used for finding the dependencies (using GetCellsToRecalculate())
+            // and its used to then reset the new content of the dependents
             HashSet<String> recalculate = new HashSet<string>();
 
             HashSet<string> tempDependents = new HashSet<string>(DGSpreadsheet.GetDependents(name));
@@ -715,6 +726,7 @@ namespace SS
                 cellDictionary.Add(name, new Cell(name, (Object)formula, lookup));
             }
 
+            // Going through all of the dependents and updating their variable content 
             foreach(String s in recalculate)
             {
                 if (cellDictionary.ContainsKey(s) && cellDictionary[s].GetContent() is Formula)
