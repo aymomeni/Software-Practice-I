@@ -245,41 +245,48 @@ namespace SS
             {
                 using (XmlReader xmlReader = XmlReader.Create(source))
                 {
-                    while (xmlReader.Read())
+                    try
                     {
-                        if (xmlReader.IsStartElement())
+                        while (xmlReader.Read())
                         {
-                           switch (xmlReader.Name.ToString())
+                            if (xmlReader.IsStartElement())
                             {
-                            
-                               case "spreadsheet":
-                            
-                                isValid = new Regex(xmlReader.GetAttribute("isvalid"));
-                                    break;
-                            
+                                switch (xmlReader.Name.ToString())
+                                {
 
-                               case"cell":
-                                    break;
-                            
+                                    case "spreadsheet":
 
-                            
-                                case "name":
-                                    tempCellName = xmlReader.ReadString();
-                                    // Checking if the name is valid
-                                    if (!nameValidation(tempCellName))
-                                    { throw new InvalidNameException(); }
-                                    break;
+                                        isValid = new Regex(xmlReader.GetAttribute("isvalid"));
+                                        break;
 
-                                case "contents":
-                                    tempContent = xmlReader.ReadString();
-                                    SetContentsOfCell(tempCellName, tempContent);
-                                    break;
 
-                               default:
-                                    throw new SpreadsheetReadException("Error in reading spreadsheet");
+                                    case "cell":
+                                        break;
 
+
+
+                                    case "name":
+                                        tempCellName = xmlReader.ReadString();
+                                        // Checking if the name is valid
+                                        if (!nameValidation(tempCellName))
+                                        { throw new InvalidNameException(); }
+                                        break;
+
+                                    case "contents":
+                                        tempContent = xmlReader.ReadString();
+                                        SetContentsOfCell(tempCellName, tempContent);
+                                        break;
+
+                                    default:
+                                        throw new SpreadsheetReadException("Error in reading spreadsheet");
+
+                                }
                             }
                         }
+                    }
+                    catch (Exception)
+                    {
+                        throw new SpreadsheetReadException("There was a problem reading from the input file.");
                     }
                 }
             }
