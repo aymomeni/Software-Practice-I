@@ -16,5 +16,13 @@ namespace SpreadsheetGUI
         {
             InitializeComponent();
         }
+
+        private void addButton_Click(object sender, EventArgs e)
+        {
+            int col, row;
+            spreadsheetPanel1.GetSelection(out col, out row);
+
+            spreadsheetPanel1.SetValue(col, row, contents.Text);
+        }
     }
 }
