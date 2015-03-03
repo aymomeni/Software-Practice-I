@@ -79,7 +79,9 @@ namespace SS
         /// </summary>
         /// <returns></returns>
         public string GetName()
-        { return nameOfCell; }
+        { return nameOfCell;
+            // bla
+        }
 
         /// <summary>
         /// Returns the contents of the cell
