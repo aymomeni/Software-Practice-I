@@ -75,5 +75,26 @@ namespace SpreadsheetGUI
         }
 
 
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Evaluate_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
     }
 }

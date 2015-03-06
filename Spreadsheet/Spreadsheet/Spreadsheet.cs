@@ -80,7 +80,6 @@ namespace SS
         /// <returns></returns>
         public string GetName()
         { return nameOfCell;
-            // bla
         }
 
         /// <summary>
