@@ -31,7 +31,7 @@ namespace SpreadsheetGUI
             // take a SpreadsheetPanel as its parameter and return nothing.  So we
             // register the displaySelection method below.
             spreadsheetPanel1.SelectionChanged += displaySelection;
-            spreadsheetPanel1.SetSelection(0, 0);
+            spreadsheetPanel1.SetSelection(2, 3);
 
             // Initializing our spreadsheet
             spreadsheet = new Spreadsheet();

@@ -63,10 +63,13 @@ namespace SpreadsheetGUI
         [STAThread]
         static void Main()
         {
-
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            // Start an application context and run one form inside it
+            MyApplicationContext appContext = MyApplicationContext.getAppContext();
+            appContext.RunForm(new Form1());
+            Application.Run(appContext);
         }
     }
 }
