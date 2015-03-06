@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Formulas;
 using SS;
 
 // PS7 - Ali Momeni - CS3500 - Joe Zackery
@@ -56,12 +57,26 @@ namespace SpreadsheetGUI
             String value;
             ss.GetSelection(out col, out row);
             ss.GetValue(col, row, out value);
-            if (value == "")
-            {
-                ss.SetValue(col, row, DateTime.Now.ToLocalTime().ToString("T"));
-                ss.GetValue(col, row, out value);
-                MessageBox.Show("Selection: column " + col + " row " + row + " value " + value);
-            }
+
+            // Setting the cell name textboxes based on whatever is selected
+            BoxCellName.Text = columnRowToCellNameConverter(col, row);
+            BoxCellValue.Text = spreadsheet.GetCellContents(BoxCellName.Text).ToString();
+
+            Object temp = spreadsheet.GetCellContents(BoxCellName.Text);
+
+            if(temp is Formula)
+            { BoxCellContent.Text = "=" + temp; }
+            else { BoxCellContent.Text = temp.ToString(); }
+
+
+            // Below code was given in the examples and is not necessary for the program,
+            // as it only served demonstration purposes
+            //if (value == "")
+            //{
+            //    ss.SetValue(col, row, DateTime.Now.ToLocalTime().ToString("T"));
+            //    ss.GetValue(col, row, out value);
+            //    MessageBox.Show("Selection: column " + col + " row " + row + " value " + value);
+            //}
         }
 
         /// <summary>
@@ -71,6 +86,7 @@ namespace SpreadsheetGUI
         /// <returns></returns>
         private string columnRowToCellNameConverter(int col, int row)
         {
+            // Converting the column to a character and adding 1 to row for normalization purposes
             String tempCellName = "" + ((char)(col + 65)) + (row + 1);
             return tempCellName;
         }
@@ -139,12 +155,36 @@ namespace SpreadsheetGUI
         }
 
         /// <summary>
-        /// Method that handles the Event of the Evaluate buttom being clicked
+        /// Method that handles the Event of the Evaluate buttom being clicked, which means that
+        /// we add elements of the cell to the spread sheet and calculate the value while we are at it
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void Evaluate_Click(object sender, EventArgs e)
         {
+            int row, col;
+            spreadsheetPanel1.GetSelection(out col, out row);
+
+            try
+            {
+                spreadsheet.SetContentsOfCell(columnRowToCellNameConverter(col, row), BoxCellContent.Text);
+            }
+            catch (EvaluateException evaluateError)
+            { MessageBox.Show(evaluateError.Message, "Note: Error occured evaulating your cell", MessageBoxButtons.OK); }
+            catch (FormulaEvaluationException evaluateError)
+            { MessageBox.Show(evaluateError.Message, "Note: Error occured evaulating your cell", MessageBoxButtons.OK); }
+            catch (CircularException circularError)
+            { MessageBox.Show(circularError.Message, "An Error occured because your data entry causes a Circular Dependency", MessageBoxButtons.OK); }
+
+            BoxCellValue.Text = spreadsheet.GetCellValue(columnRowToCellNameConverter(col, row)).ToString();
+
+            foreach(String cellName in spreadsheet.GetNamesOfAllNonemptyCells())
+            {
+                cellNameToColumnRowConverter(cellName, out col, out row);
+
+                spreadsheetPanel1.SetValue(col, row, spreadsheet.GetCellValue(cellName).ToString());
+
+            }
 
         }
 

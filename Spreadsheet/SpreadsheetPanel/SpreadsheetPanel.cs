@@ -496,5 +496,10 @@ namespace SS
 
         }
 
+        private void SpreadsheetPanel_Load(object sender, EventArgs e)
+        {
+
+        }
+
     }
 }

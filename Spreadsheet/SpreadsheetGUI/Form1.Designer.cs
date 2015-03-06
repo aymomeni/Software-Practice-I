@@ -39,12 +39,12 @@
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.BoxCellName = new System.Windows.Forms.TextBox();
+            this.BoxCellContent = new System.Windows.Forms.TextBox();
             this.LabelName = new System.Windows.Forms.Label();
             this.LabelContent = new System.Windows.Forms.Label();
             this.LabelValue = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.BoxCellValue = new System.Windows.Forms.TextBox();
             this.Evaluate = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -54,7 +54,7 @@
             this.spreadsheetPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.spreadsheetPanel1.Location = new System.Drawing.Point(0, 44);
+            this.spreadsheetPanel1.Location = new System.Drawing.Point(0, 41);
             this.spreadsheetPanel1.Name = "spreadsheetPanel1";
             this.spreadsheetPanel1.Size = new System.Drawing.Size(898, 546);
             this.spreadsheetPanel1.TabIndex = 0;
@@ -140,25 +140,26 @@
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(123, 24);
             this.helpToolStripMenuItem.Text = "Help";
             // 
-            // textBox1
+            // BoxCellName
             // 
-            this.textBox1.Location = new System.Drawing.Point(148, 14);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(64, 20);
-            this.textBox1.TabIndex = 4;
+            this.BoxCellName.Location = new System.Drawing.Point(148, 14);
+            this.BoxCellName.Name = "BoxCellName";
+            this.BoxCellName.ReadOnly = true;
+            this.BoxCellName.Size = new System.Drawing.Size(64, 20);
+            this.BoxCellName.TabIndex = 4;
             // 
-            // textBox2
+            // BoxCellContent
             // 
-            this.textBox2.Location = new System.Drawing.Point(281, 14);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(133, 20);
-            this.textBox2.TabIndex = 5;
+            this.BoxCellContent.Location = new System.Drawing.Point(281, 14);
+            this.BoxCellContent.Name = "BoxCellContent";
+            this.BoxCellContent.Size = new System.Drawing.Size(133, 20);
+            this.BoxCellContent.TabIndex = 5;
             // 
             // LabelName
             // 
             this.LabelName.AutoSize = true;
             this.LabelName.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LabelName.Location = new System.Drawing.Point(70, 13);
+            this.LabelName.Location = new System.Drawing.Point(70, 15);
             this.LabelName.Name = "LabelName";
             this.LabelName.Size = new System.Drawing.Size(72, 17);
             this.LabelName.TabIndex = 6;
@@ -168,7 +169,7 @@
             // 
             this.LabelContent.AutoSize = true;
             this.LabelContent.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LabelContent.Location = new System.Drawing.Point(218, 13);
+            this.LabelContent.Location = new System.Drawing.Point(218, 15);
             this.LabelContent.Name = "LabelContent";
             this.LabelContent.Size = new System.Drawing.Size(57, 17);
             this.LabelContent.TabIndex = 7;
@@ -184,12 +185,12 @@
             this.LabelValue.TabIndex = 8;
             this.LabelValue.Text = "Value";
             // 
-            // textBox3
+            // BoxCellValue
             // 
-            this.textBox3.Location = new System.Drawing.Point(572, 14);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(111, 20);
-            this.textBox3.TabIndex = 9;
+            this.BoxCellValue.Location = new System.Drawing.Point(572, 14);
+            this.BoxCellValue.Name = "BoxCellValue";
+            this.BoxCellValue.Size = new System.Drawing.Size(111, 20);
+            this.BoxCellValue.TabIndex = 9;
             // 
             // Evaluate
             // 
@@ -207,12 +208,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(899, 590);
             this.Controls.Add(this.Evaluate);
-            this.Controls.Add(this.textBox3);
+            this.Controls.Add(this.BoxCellValue);
             this.Controls.Add(this.LabelValue);
             this.Controls.Add(this.LabelContent);
             this.Controls.Add(this.LabelName);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.BoxCellContent);
+            this.Controls.Add(this.BoxCellName);
             this.Controls.Add(this.addButton);
             this.Controls.Add(this.contents);
             this.Controls.Add(this.spreadsheetPanel1);
@@ -241,12 +242,12 @@
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox BoxCellName;
+        private System.Windows.Forms.TextBox BoxCellContent;
         private System.Windows.Forms.Label LabelName;
         private System.Windows.Forms.Label LabelContent;
         private System.Windows.Forms.Label LabelValue;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.TextBox BoxCellValue;
         private System.Windows.Forms.Button Evaluate;
     }
 }

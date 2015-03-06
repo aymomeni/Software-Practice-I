@@ -58,17 +58,19 @@ namespace SS
             {
                 Formula f = new Formula(content.ToString());
 
+
+                //UPDATE: Uncommenting for GUI homework, since the GUI catches the exceptions
                 // We want to immediately evaluate the cell contents,
                 // and if we have difficulty figuring out its value by using evaluate
                 // we simply store a formula error in value for the time being
-                try
-                {
+                //try
+                //{
                     this.value = f.Evaluate(s => lookup(s));
-                }
-                catch (FormulaEvaluationException)
-                {
-                    this.value = new FormulaError();
-                }
+                //}
+                //catch (FormulaEvaluationException)
+                //{
+                //    this.value = new FormulaError();
+                //}
             }
             // else the content and the value are simply a string and the same
             else { value = content; }
