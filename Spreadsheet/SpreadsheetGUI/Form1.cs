@@ -25,6 +25,14 @@ namespace SpreadsheetGUI
         {
             // Starts up the GUI
             InitializeComponent();
+
+            // The SelectionChanged event is declared with a
+            // delegate that specifies that all methods that register with it must
+            // take a SpreadsheetPanel as its parameter and return nothing.  So we
+            // register the displaySelection method below.
+            spreadsheetPanel1.SelectionChanged += displaySelection;
+            spreadsheetPanel1.SetSelection(0, 0);
+
             // Initializing our spreadsheet
             spreadsheet = new Spreadsheet();
         }
@@ -35,6 +43,25 @@ namespace SpreadsheetGUI
             spreadsheetPanel1.GetSelection(out col, out row);
 
             spreadsheetPanel1.SetValue(col, row, contents.Text);
+        }
+
+
+
+        // Every time the selection changes, this method is called with the
+        // Spreadsheet as its parameter.  We display the current time in the cell.
+
+        private void displaySelection(SpreadsheetPanel ss)
+        {
+            int row, col;
+            String value;
+            ss.GetSelection(out col, out row);
+            ss.GetValue(col, row, out value);
+            if (value == "")
+            {
+                ss.SetValue(col, row, DateTime.Now.ToLocalTime().ToString("T"));
+                ss.GetValue(col, row, out value);
+                MessageBox.Show("Selection: column " + col + " row " + row + " value " + value);
+            }
         }
 
         /// <summary>
@@ -74,26 +101,77 @@ namespace SpreadsheetGUI
             col = ((int)ctemp.ToCharArray()[0]) - 65;           
         }
 
-
+        /// <summary>
+        /// Method responsible for correctly saving the the spreadsheet
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }
 
+        /// <summary>
+        /// Fallowing method opens a spreadsheet from a saved source compatible with the implementation
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
         }
 
+
+        /// <summary>
+        /// When the menu's close button is clicked this method first checks if it was changed and then
+        /// closes the spreadsheet
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // checking if the spreadsheet has changed
+            if (spreadsheet.Changed)
+            {
+                Close();
+            } 
 
         }
 
+        /// <summary>
+        /// Method that handles the Event of the Evaluate buttom being clicked
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Evaluate_Click(object sender, EventArgs e)
         {
 
         }
+
+
+        /// <summary>
+        /// Method that creates a new instance of the GUI
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MyApplicationContext.getAppContext().RunForm(new Form1());
+        }
+
+        /// <summary>
+        /// When the instance of the Spreadsheet GUI is about to be closed,
+        /// this method makes sure to ask the user if he is sure (if the spreadsheet had been changed)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // First checking if the spreadsheet has been changed
+
+            // Showing a dialog asking the user if he really wants to quit
+        }
+
 
 
     }
