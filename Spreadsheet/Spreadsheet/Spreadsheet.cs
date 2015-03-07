@@ -63,14 +63,14 @@ namespace SS
                 // We want to immediately evaluate the cell contents,
                 // and if we have difficulty figuring out its value by using evaluate
                 // we simply store a formula error in value for the time being
-                //try
-                //{
+                try
+                {
                     this.value = f.Evaluate(s => lookup(s));
-                //}
-                //catch (FormulaEvaluationException)
-                //{
-                //    this.value = new FormulaError();
-                //}
+                }
+                catch (FormulaEvaluationException)
+                {
+                    this.value = new FormulaError();
+                }
             }
             // else the content and the value are simply a string and the same
             else { value = content; }
@@ -294,6 +294,7 @@ namespace SS
                                 }
                             }
                         }
+                        Changed = false;
                     }
                     catch (Exception)
                     {
@@ -376,6 +377,7 @@ namespace SS
                             }
                             writer.WriteEndElement(); // ending cell                   
                         }
+                        Changed = false;
                     }
                     // ending cell
                     writer.WriteEndDocument();

@@ -228,9 +228,28 @@ namespace SpreadsheetGUI
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // checking if the spreadsheet has changed
-            if (spreadsheet.Changed)
+            if (!spreadsheet.Changed)
             {
                 Close();
+            }
+            else
+            {
+                DialogResult closeDialog = MessageBox.Show("You have made changes to the document, would you like to save your document before cancelling?", "Save", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if(closeDialog == DialogResult.Yes)
+                {
+                    saveToolStripMenuItem_Click(sender, e);
+                    if (cancel)
+                        Close();
+                    else
+                        cancel = false;
+                
+                } else if(closeDialog == DialogResult.No)  { Close(); }
+                else if(closeDialog == DialogResult.Cancel)
+                {
+                    if (e is FormClosingEventArgs)
+                        ((FormClosingEventArgs)e).Cancel = true;
+                }
+
             } 
 
         }
@@ -305,8 +324,23 @@ namespace SpreadsheetGUI
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             // First checking if the spreadsheet has been changed
+            if(spreadsheet.Changed)
+            {
+                // Showing a dialog asking the user if he really wants to quit
+                DialogResult dialog = MessageBox.Show("You have made changes to the document, would you like to save your document before cancelling?", "Warning", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if (dialog == DialogResult.Yes)
+                {
+                    saveToolStripMenuItem_Click(sender, e);
+                    if (!cancel)
+                        cancel = true;
+                }
+                else if (dialog == DialogResult.Cancel)
+                {
+                    if (e is FormClosingEventArgs)
+                        ((FormClosingEventArgs)e).Cancel = true;
 
-            // Showing a dialog asking the user if he really wants to quit
+                }
+            }
         }
 
 
