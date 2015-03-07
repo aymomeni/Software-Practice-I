@@ -267,27 +267,34 @@ namespace SpreadsheetGUI
 
             try
             {
-                // Setting the value in spreadsheet based on the GUI cell
-                spreadsheet.SetContentsOfCell(columnRowToCellNameConverter(col, row), BoxCellContent.Text);
+                try
+                {
+                    // Setting the value in spreadsheet based on the GUI cell
+                    spreadsheet.SetContentsOfCell(columnRowToCellNameConverter(col, row), BoxCellContent.Text);
+                }
+                // Catching numerous exceptions that otherwise would terminate the GUI program
+                // A Message Dialogue is shown to prevent abropt cancellation of the program
+                catch (EvaluateException evaluateError)
+                { MessageBox.Show(evaluateError.Message, "Note: Error occured evaulating your cell", MessageBoxButtons.OK); }
+                catch (FormulaEvaluationException evaluateError)
+                { MessageBox.Show(evaluateError.Message, "Note: Error occured evaulating your cell", MessageBoxButtons.OK); } // This error should never occur
+                catch (CircularException circularError)
+                { MessageBox.Show(circularError.Message, "An Error occured because your data entry causes a Circular Dependency", MessageBoxButtons.OK); }
+
+                BoxCellValue.Text = spreadsheet.GetCellValue(columnRowToCellNameConverter(col, row)).ToString();
+
+                // Going the all of the empty cells that aren't empty in the spreadsheet and setting the different cells in the GUI
+                foreach (String cellName in spreadsheet.GetNamesOfAllNonemptyCells())
+                {
+                    cellNameToColumnRowConverter(cellName, out col, out row);
+
+                    spreadsheetPanel1.SetValue(col, row, spreadsheet.GetCellValue(cellName).ToString());
+
+                }
             }
-            // Catching numerous exceptions that otherwise would terminate the GUI program
-            // A Message Dialogue is shown to prevent abropt cancellation of the program
-            catch (EvaluateException evaluateError)
-            { MessageBox.Show(evaluateError.Message, "Note: Error occured evaulating your cell", MessageBoxButtons.OK); }
-            catch (FormulaEvaluationException evaluateError)
-            { MessageBox.Show(evaluateError.Message, "Note: Error occured evaulating your cell", MessageBoxButtons.OK); }
-            catch (CircularException circularError)
-            { MessageBox.Show(circularError.Message, "An Error occured because your data entry causes a Circular Dependency", MessageBoxButtons.OK); }
-
-            BoxCellValue.Text = spreadsheet.GetCellValue(columnRowToCellNameConverter(col, row)).ToString();
-
-            // Going the all of the empty cells that aren't empty in the spreadsheet and setting the different cells in the GUI
-            foreach(String cellName in spreadsheet.GetNamesOfAllNonemptyCells())
+            catch (Exception)
             {
-                cellNameToColumnRowConverter(cellName, out col, out row);
-
-                spreadsheetPanel1.SetValue(col, row, spreadsheet.GetCellValue(cellName).ToString());
-
+                MessageBox.Show("Note: Error occured entering the value into a cell. Please check if your cell name is Valid.", "Error", MessageBoxButtons.OK);
             }
 
         }
