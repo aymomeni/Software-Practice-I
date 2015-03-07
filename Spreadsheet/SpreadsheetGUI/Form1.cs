@@ -200,7 +200,6 @@ namespace SpreadsheetGUI
                 openForm.fileName = name;
                 MyApplicationContext.getAppContext().RunForm(openForm);
 
-
                 try
                 {
                     // Going through all the cells that exist in our spreadsheet class and adding it to the GUI
@@ -249,7 +248,6 @@ namespace SpreadsheetGUI
                     if (e is FormClosingEventArgs)
                         ((FormClosingEventArgs)e).Cancel = true;
                 }
-
             } 
 
         }
@@ -352,7 +350,7 @@ namespace SpreadsheetGUI
         /// <param name="e"></param>
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            DialogResult helpDialog = MessageBox.Show("This Spreadsheet program is written to aid the user in tasks that require a table that has cells which can be manipulated, and respects dependencies between cells through using =(Function+valid Cell Names). You can enter values into cells by first selecting the cell (using a mouse click selection). Here you can manipulate the content of cells by using the content box. Clicking Evaluate or simply pressing enter will not only store the value inside the cell but also evaluate a value and display it next to the Value textbox, in a Value Box. \n\n Next, you are able to save the spreadsheet that you have created through clicking File->Save and selecting a destination path of your choice. Obviously you are also in turn able to open Spreadsheets that you have created by using File->Open and selecting a valid (compatible) .ss file", "Help", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
     }
 }
