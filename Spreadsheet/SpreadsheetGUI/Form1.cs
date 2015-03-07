@@ -158,7 +158,6 @@ namespace SpreadsheetGUI
                         fileName = name; // saving the file name
                         spreadsheet.Save(File.CreateText(name));
                     }
-
                     else
                     {
                         saveDialog.AddExtension = false;
@@ -343,6 +342,7 @@ namespace SpreadsheetGUI
                     if (!cancel)
                         cancel = true;
                 }
+                // if cancel is clicked we simple want to go back to the spreadsheet without any action that took place
                 else if (dialog == DialogResult.Cancel)
                 {
                     if (e is FormClosingEventArgs)
