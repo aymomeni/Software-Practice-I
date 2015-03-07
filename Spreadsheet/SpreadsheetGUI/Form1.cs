@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Formulas;
+using System.IO;
 using SS;
 
 // PS7 - Ali Momeni - CS3500 - Joe Zackery
@@ -21,7 +22,17 @@ namespace SpreadsheetGUI
         // Declaring a spreadsheet 
         Spreadsheet spreadsheet;
 
+        // boolean helper for the cancelation of files
+        private Boolean cancel = true;
 
+        // For keeping track of the file name
+        private String fileName;
+
+
+        /// <summary>
+        /// Constructor that ignites the GUI application and sets up 
+        /// an instance of our spreadsheet
+        /// </summary>
         public Form1()
         {
             // Starts up the GUI
@@ -38,14 +49,26 @@ namespace SpreadsheetGUI
             spreadsheet = new Spreadsheet();
         }
 
-        private void addButton_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Constructor that ignites the GUI application and sets up 
+        /// Here a filename is used to create a new GUI form and for the initiation of Spreadsheet
+        /// </summary>
+        public Form1(TextReader source)
         {
-            int col, row;
-            spreadsheetPanel1.GetSelection(out col, out row);
+            // Starts up the GUI
+            InitializeComponent();
 
-            spreadsheetPanel1.SetValue(col, row, contents.Text);
+            // The SelectionChanged event is declared with a
+            // delegate that specifies that all methods that register with it must
+            // take a SpreadsheetPanel as its parameter and return nothing.  So we
+            // register the displaySelection method below.
+            spreadsheetPanel1.SelectionChanged += displaySelection;
+            spreadsheetPanel1.SetSelection(2, 3);
+
+            // Initializing our spreadsheet using a reader
+            spreadsheet = new Spreadsheet(source);
+            this.Text = fileName;
         }
-
 
 
         // Every time the selection changes, this method is called with the
@@ -64,19 +87,11 @@ namespace SpreadsheetGUI
 
             Object temp = spreadsheet.GetCellContents(BoxCellName.Text);
 
+            // checking if the value entered into the cell are of type formula
             if(temp is Formula)
             { BoxCellContent.Text = "=" + temp; }
             else { BoxCellContent.Text = temp.ToString(); }
 
-
-            // Below code was given in the examples and is not necessary for the program,
-            // as it only served demonstration purposes
-            //if (value == "")
-            //{
-            //    ss.SetValue(col, row, DateTime.Now.ToLocalTime().ToString("T"));
-            //    ss.GetValue(col, row, out value);
-            //    MessageBox.Show("Selection: column " + col + " row " + row + " value " + value);
-            //}
         }
 
         /// <summary>
@@ -118,12 +133,47 @@ namespace SpreadsheetGUI
         }
 
         /// <summary>
-        /// Method responsible for correctly saving the the spreadsheet
+        /// Method responsible for saving the the spreadsheet
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // if we don't have a file name yet
+            if (fileName == null)
+            {
+                // Creating a save Dialog with parsing definition for the extension
+                SaveFileDialog saveDialog = new SaveFileDialog();
+                saveDialog.Filter = "Spreadsheet Doc (*.ss)| *.ss | All files (*.*) | *.*";
+                saveDialog.Title = "Save";
+                saveDialog.InitialDirectory = @"C:\";
+
+                if(saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string name = saveDialog.FileName;
+                    // Checking if an extension of .ss should be added or not
+                    if (saveDialog.FilterIndex == 1)
+                    {
+                        saveDialog.AddExtension = true;
+                        fileName = name; // saving the file name
+                        spreadsheet.Save(File.CreateText(name));
+                    }
+
+                    else
+                    {
+                        saveDialog.AddExtension = false;
+                        fileName = name; // saving the file name
+                        spreadsheet.Save(File.CreateText(name));
+                    }
+                }
+            }
+            else
+            {
+                if (sender.ToString() == "Close")
+                {
+                    cancel = false;
+                }
+            }
 
         }
 
@@ -134,6 +184,37 @@ namespace SpreadsheetGUI
         /// <param name="e"></param>
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // creating an open Dialog window with extension properties
+            OpenFileDialog openDialog = new OpenFileDialog();
+            openDialog.Filter = "Sprd Document (*.ss)|*.ss|All files(*.*)|*.*";
+            openDialog.Title = "0pen";
+            openDialog.InitialDirectory = @"C:\";
+            int col, row;
+
+            // Opening the file selection Dialog box for the user to select a spreadsheet class
+            if(openDialog.ShowDialog() == DialogResult.OK)
+            {
+                string name = openDialog.FileName;
+                Form1 openForm = new Form1(File.OpenText(name));
+                openForm.Text = name;
+                openForm.fileName = name;
+                MyApplicationContext.getAppContext().RunForm(openForm);
+
+
+                try
+                {
+                    // Going through all the cells that exist in our spreadsheet class and adding it to the GUI
+                    foreach(string cellName in openForm.spreadsheet.GetNamesOfAllNonemptyCells())
+                    {
+                        cellNameToColumnRowConverter(cellName, out col, out row);
+                        openForm.spreadsheetPanel1.SetValue(col, row, openForm.spreadsheet.GetCellValue(cellName).ToString());
+                        openForm.spreadsheetPanel1.SetSelection(col, row);
+                        openForm.displaySelection(spreadsheetPanel1);
+                    }      
+                } catch (Exception creatingFileException)
+                { MessageBox.Show(creatingFileException.Message, "An Error occured reading in creating the spreadshit from the file given."); }
+
+            }
 
         }
 
@@ -167,8 +248,11 @@ namespace SpreadsheetGUI
 
             try
             {
+                // Setting the value in spreadsheet based on the GUI cell
                 spreadsheet.SetContentsOfCell(columnRowToCellNameConverter(col, row), BoxCellContent.Text);
             }
+            // Catching numerous exceptions that otherwise would terminate the GUI program
+            // A Message Dialogue is shown to prevent abropt cancellation of the program
             catch (EvaluateException evaluateError)
             { MessageBox.Show(evaluateError.Message, "Note: Error occured evaulating your cell", MessageBoxButtons.OK); }
             catch (FormulaEvaluationException evaluateError)
@@ -178,6 +262,7 @@ namespace SpreadsheetGUI
 
             BoxCellValue.Text = spreadsheet.GetCellValue(columnRowToCellNameConverter(col, row)).ToString();
 
+            // Going the all of the empty cells that aren't empty in the spreadsheet and setting the different cells in the GUI
             foreach(String cellName in spreadsheet.GetNamesOfAllNonemptyCells())
             {
                 cellNameToColumnRowConverter(cellName, out col, out row);
@@ -188,6 +273,18 @@ namespace SpreadsheetGUI
 
         }
 
+        /// <summary>
+        /// Does the evaluation button through a enter press
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BoxCellContent_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)13)
+            {
+                Evaluate_Click(sender, e);
+            }
+        }
 
         /// <summary>
         /// Method that creates a new instance of the GUI
@@ -213,6 +310,15 @@ namespace SpreadsheetGUI
         }
 
 
+        /// <summary>
+        /// Method that handles the event of the User needing help using the GUI
+        /// Here we state the main functionality of the spreadsheet and some guidance on how to use it
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
 
+        }
     }
 }
