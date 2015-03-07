@@ -233,6 +233,7 @@ namespace SpreadsheetGUI
             }
             else
             {
+                // Creating an appropriate Message Dialogue
                 DialogResult closeDialog = MessageBox.Show("You have made changes to the document, would you like to save your document before cancelling?", "Save", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
                 if(closeDialog == DialogResult.Yes)
                 {
@@ -241,10 +242,11 @@ namespace SpreadsheetGUI
                         Close();
                     else
                         cancel = false;
-                
+                // No selection that cancells the spreadsheet
                 } else if(closeDialog == DialogResult.No)  { Close(); }
                 else if(closeDialog == DialogResult.Cancel)
                 {
+                    // Cancel selection that cancels the instance of the GUI
                     if (e is FormClosingEventArgs)
                         ((FormClosingEventArgs)e).Cancel = true;
                 }
@@ -297,6 +299,7 @@ namespace SpreadsheetGUI
         /// <param name="e"></param>
         private void BoxCellContent_KeyPress(object sender, KeyPressEventArgs e)
         {
+            // If enter is pressed we also evaluate the cell entry
             if (e.KeyChar == (char)13)
             {
                 Evaluate_Click(sender, e);
@@ -310,6 +313,7 @@ namespace SpreadsheetGUI
         /// <param name="e"></param>
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Creates a new spreadsheet GUI
             MyApplicationContext.getAppContext().RunForm(new Form1());
         }
 
@@ -350,6 +354,7 @@ namespace SpreadsheetGUI
         /// <param name="e"></param>
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            // Help Message Dialogue for the User
             DialogResult helpDialog = MessageBox.Show("This Spreadsheet program is written to aid the user in tasks that require a table that has cells which can be manipulated, and respects dependencies between cells through using =(Function+valid Cell Names). You can enter values into cells by first selecting the cell (using a mouse click selection). Here you can manipulate the content of cells by using the content box. Clicking Evaluate or simply pressing enter will not only store the value inside the cell but also evaluate a value and display it next to the Value textbox, in a Value Box. \n\n Next, you are able to save the spreadsheet that you have created through clicking File->Save and selecting a destination path of your choice. Obviously you are also in turn able to open Spreadsheets that you have created by using File->Open and selecting a valid (compatible) .ss file", "Help", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
     }
