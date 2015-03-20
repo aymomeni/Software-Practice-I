@@ -3,9 +3,9 @@
  */
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Formulas;
 using System.Collections.Generic;
 using Dependencies;
+using Formulas;
 
 namespace TestCases
 {

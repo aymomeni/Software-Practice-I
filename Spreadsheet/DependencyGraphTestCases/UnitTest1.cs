@@ -4,10 +4,9 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Formulas;
-using Dependencies;
 using System.Collections.Generic;
 
-namespace DependencyGraphTestCases
+namespace Dependencies
 {
     [TestClass]
     public class UnitTest1
