@@ -8,16 +8,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace GitHubRest
+namespace GitHubBrowser
 {
-    public partial class GitHubBrowser : Form
+    public partial class form1 : Form
     {
-        public GitHubBrowser()
+        public form1()
         {
             InitializeComponent();
         }
 
-        private void GitHubBrowser_Load(object sender, EventArgs e)
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
         {
 
         }
