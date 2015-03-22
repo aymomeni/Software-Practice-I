@@ -199,7 +199,7 @@ namespace GitHubBrowser
         /// <summary>
         /// Grabs all of the data fields (users, login, avatar, description)
         /// </summary>
-        private static async void searchHelper(CancellationToken cancel)
+        private static async void searchHelper(CancellationToken cancel, DataGridView grid)
         {
             // Holds the different data fields
             string[] name = new String[100], login = new String[100], description = new String[100];
@@ -232,15 +232,14 @@ namespace GitHubBrowser
                                 avatarArr[count] = img;
                                 stream.Close();
                                 // TODO: Grab the
-
-
+                                if (count < 30)
+                                {
+                                    Object[] row1 = {avatarArr[count], name[count], login[count], description[count] };
+                                    grid.Rows.Add(row1[0], row1[1], row1[2], row1[3]);
+                                }
                                 //System.Windows.Forms.MessageBox.Show("" + user.login); //TODO: ROWS COLUMS
-
+                                grid.Refresh();
                                 count++; // increment count
-                            }
-                            foreach (String link in response.Headers.GetValues("Link"))
-                            {
-                                //Console.WriteLine(link);
                             }
                         }
                         else
@@ -279,7 +278,7 @@ namespace GitHubBrowser
 
             //task = Task.Run(() => searchHelper(tokenSource.Token), tokenSource.Token);
 
-            searchHelper(tokenSource.Token);
+            searchHelper(tokenSource.Token, searchGrid);
             try
             {
                 //await task;
@@ -288,10 +287,6 @@ namespace GitHubBrowser
             {
                 //
             }
-
-            
-            
-
          }
 
         ///// <summary>
@@ -324,5 +319,6 @@ namespace GitHubBrowser
            System.Windows.Forms.MessageBox.Show("cancelled"); //TODO: ROWS COLUMS
             //Close();
         }
+
     }
 }
