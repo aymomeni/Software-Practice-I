@@ -16,7 +16,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Windows;
-
+using System.Drawing;
 
 namespace GitHubBrowser
 {
@@ -229,9 +229,20 @@ namespace GitHubBrowser
                                 byte[] imageData = tempWebClient.DownloadData(imageURL); //DownloadData function from here
                                 MemoryStream stream = new MemoryStream(imageData);
                                 Image img = Image.FromStream(stream);
+                                
+                                //Image Processing
+                                Image.GetThumbnailImageAbort myCallback = new Image.GetThumbnailImageAbort(() => false);
+                                Bitmap myBitmap = new Bitmap(img);
+                                img = myBitmap.GetThumbnailImage(20, 20, myCallback, IntPtr.Zero);
+                               
+
+                                
                                 avatarArr[count] = img;
                                 stream.Close();
                                 // TODO: Grab the
+
+
+
                                 if (count < 30)
                                 {
                                     Object[] row1 = {avatarArr[count], name[count], login[count], description[count] };
@@ -266,6 +277,8 @@ namespace GitHubBrowser
                 }
                 
         }
+
+
 
         /// <summary>
         /// 
