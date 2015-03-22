@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows;
 using System.Drawing;
+using System.Collections;
 
 namespace GitHubBrowser
 {
@@ -40,6 +41,11 @@ namespace GitHubBrowser
 
         // using a cancellation token
         private CancellationTokenSource tokenSource;
+
+        // Holds the different data fields
+        static ArrayList name = new ArrayList(), login = new ArrayList(), description = new ArrayList();
+        static int count = 0; // counter that helps in collecting the data fields
+        static ArrayList avatarArr = new ArrayList();
 
         public static Task task;
 
@@ -201,10 +207,7 @@ namespace GitHubBrowser
         /// </summary>
         private static async void searchHelper(CancellationToken cancel, DataGridView grid)
         {
-            // Holds the different data fields
-            string[] name = new String[100], login = new String[100], description = new String[100];
-            int count = 0; // counter that helps in collecting the data fields
-            Image[] avatarArr = new Image[100];
+            
             String imageURL = "";
             WebClient tempWebClient = new WebClient();
 
@@ -222,9 +225,9 @@ namespace GitHubBrowser
                             foreach (dynamic user in users)
                             {
                                 // Console.WriteLine(user.login);
-                                name[count] = user.name;
-                                login[count] = user.owner.login;
-                                description[count] = user.description; //TODO: must be set to description
+                                name.Add(user.name);
+                                login.Add(user.owner.login);
+                                description.Add(user.description); //TODO: must be set to description
                                 imageURL = user.owner.avatar_url;
                                 byte[] imageData = tempWebClient.DownloadData(imageURL); //DownloadData function from here
                                 MemoryStream stream = new MemoryStream(imageData);
@@ -237,7 +240,7 @@ namespace GitHubBrowser
                                
 
                                 
-                                avatarArr[count] = img;
+                                avatarArr.Add(img);
                                 stream.Close();
                                 // TODO: Grab the
 
@@ -276,6 +279,19 @@ namespace GitHubBrowser
                     // just catch the exception and cancel
                 }
                 
+        }
+
+
+        /// <summary>
+        /// Updates the Data Grid
+        /// </summary>
+        private static void updateDataGrid()
+        {
+
+
+
+
+
         }
 
 
