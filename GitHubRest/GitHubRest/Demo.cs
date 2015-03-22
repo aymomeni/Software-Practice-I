@@ -95,6 +95,7 @@ namespace Restful
                     foreach (dynamic user in users)
                     {
                         Console.WriteLine(user.login);
+                        System.Windows.Forms.MessageBox.Show(user.login); 
                     }
                     foreach (String link in response.Headers.GetValues("Link"))
                     {
