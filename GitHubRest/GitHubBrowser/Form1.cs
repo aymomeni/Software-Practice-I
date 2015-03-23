@@ -47,6 +47,11 @@ namespace GitHubBrowser
         static int count = 0; // counter that helps in collecting the data fields
         static ArrayList avatarArr = new ArrayList();
 
+        // used to keep track of positions of what next and prev
+        static int startIndex = 0;
+        static int endIndex = 30;
+        static int amountOfDataElements = 0; // keeps track of how many data elements have been grabed from the gitHub server
+
         public static Task task;
 
         public form1()
@@ -60,8 +65,6 @@ namespace GitHubBrowser
         {
 
         }
-
-
 
         /// <summary>
         /// Creates a generic client for communicating with GitHub
@@ -209,8 +212,8 @@ namespace GitHubBrowser
         {
             
             String imageURL = "";
-            WebClient tempWebClient = new WebClient();
-
+            WebClient tempWebClient = new WebClient();         
+            int count = 1;
                 try
                 {
                     cancel.ThrowIfCancellationRequested();
@@ -224,37 +227,36 @@ namespace GitHubBrowser
                             dynamic users = JsonConvert.DeserializeObject(result);
                             foreach (dynamic user in users)
                             {
-                                // Console.WriteLine(user.login);
+                                // Grabbing the data elements from the website and 
+                                // adding it to the arraylist
                                 name.Add(user.name);
                                 login.Add(user.owner.login);
-                                description.Add(user.description); //TODO: must be set to description
+                                description.Add(user.description); 
                                 imageURL = user.owner.avatar_url;
-                                byte[] imageData = tempWebClient.DownloadData(imageURL); //DownloadData function from here
+                                byte[] imageData = tempWebClient.DownloadData(imageURL); 
                                 MemoryStream stream = new MemoryStream(imageData);
                                 Image img = Image.FromStream(stream);
-                                
+
                                 //Image Processing
                                 Image.GetThumbnailImageAbort myCallback = new Image.GetThumbnailImageAbort(() => false);
                                 Bitmap myBitmap = new Bitmap(img);
                                 img = myBitmap.GetThumbnailImage(20, 20, myCallback, IntPtr.Zero);
-                               
 
-                                
                                 avatarArr.Add(img);
                                 stream.Close();
+
+
+                                
+
+
+                                amountOfDataElements++;
+                                count++;
                                 // TODO: Grab the
 
-
-
-                                if (count < 30)
-                                {
-                                    Object[] row1 = {avatarArr[count], name[count], login[count], description[count] };
-                                    grid.Rows.Add(row1[0], row1[1], row1[2], row1[3]);
-                                }
-                                //System.Windows.Forms.MessageBox.Show("" + user.login); //TODO: ROWS COLUMS
-                                grid.Refresh();
-                                count++; // increment count
                             }
+
+                            //Update the grid
+                            updateDataGrid(grid, startIndex, endIndex);
                         }
                         else
                         {
@@ -262,16 +264,8 @@ namespace GitHubBrowser
                             Console.WriteLine(response.ReasonPhrase);
                         }
                      
-
                        // task = new Thread(new ThreadStart(populateDataGrid(name, login, description)));
                         
-                        //populateDataGrid(name, login, description);
-                        //Populating the DataGrid
-                        //populateDataGrid(name, login, description);
-
-                        //string[] row1 = { null, name[0], login[0], description[0] };
-                        //searchGrid.Rows.Add(row1[0]);
-                
                     }
                 }
                 catch (OperationCanceledException)
@@ -285,13 +279,19 @@ namespace GitHubBrowser
         /// <summary>
         /// Updates the Data Grid
         /// </summary>
-        private static void updateDataGrid()
+        private static void updateDataGrid(DataGridView dataGrid, int startIndex, int endIndex)
         {
 
+            for(int i = startIndex; i < endIndex; i++)
+            {
+                Object[] row1 = { avatarArr[i], name[i], login[i], description[i] };
+                dataGrid.Rows.Add(row1[0], row1[1], row1[2], row1[3]);
+                dataGrid.Refresh();
+            }
 
+            
 
-
-
+            return;
         }
 
 
@@ -318,24 +318,6 @@ namespace GitHubBrowser
             }
          }
 
-        ///// <summary>
-        ///// Populates the datagrid in the GUI 
-        ///// </summary>
-        ///// <param name="user"></param>
-        ///// <param name="login"></param>
-        ///// <param name="avatar"></param>
-        ///// <param name="description"></param>
-        //private async void  populateDataGrid(string[] user, string[] login, string[] description) // Image[] avatar, 
-        //{
-
-        //    string[] row1 = {null, user[0], login[0], description[0]};
-
-        //    //for(int i = 0; i < 30; i++){
-        //    //    searchGrid.Column[i] = 
-        //    //}
-        //    searchGrid.Rows.Add(row1[0]);
-
-        //}
 
         /// <summary>
         /// 
@@ -347,6 +329,53 @@ namespace GitHubBrowser
             tokenSource.Cancel();
            System.Windows.Forms.MessageBox.Show("cancelled"); //TODO: ROWS COLUMS
             //Close();
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void nextButton_Click(object sender, EventArgs e)
+        {
+            // checks if we have enough elements in our collection
+            if(){
+
+
+            }
+
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void previousButton_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private static void resetAll(){
+
+
+        }
+
+
+
+        /// <summary>
+        /// resets the current grid
+        /// </summary>
+        private static void resetGrid(DataGridView grid)
+        {
+            grid.Rows.Clear();
+
         }
 
     }
