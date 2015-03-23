@@ -62,6 +62,8 @@ namespace GitHubBrowser
         public form1()
         {
             InitializeComponent();
+            tokenSource = new CancellationTokenSource();
+            CheckForIllegalCrossThreadCalls = false; // turning off cross-thread exceptions (Jake)
         }
 
        
@@ -225,7 +227,7 @@ namespace GitHubBrowser
                    
                     using (HttpClient client = CreateClient())
                     {
-                        HttpResponseMessage response = await client.GetAsync("/repositories");
+                        HttpResponseMessage response = await client.GetAsync("/repositories", cancel);
                         if (response.IsSuccessStatusCode)
                         {
                             String result = await response.Content.ReadAsStringAsync();
@@ -279,6 +281,77 @@ namespace GitHubBrowser
                 
         }
 
+        /// <summary>
+        /// Grabs all of the data fields (users, login, avatar, description)
+        /// </summary>
+        private static async void searchHelper2(CancellationToken cancel, DataGridView grid)
+        {
+
+            String imageURL = "";
+            WebClient tempWebClient = new WebClient();
+            int count = 1;
+            try
+            {
+                cancel.ThrowIfCancellationRequested();
+
+                using (HttpClient client = CreateClient())
+                {
+                    HttpResponseMessage response = await client.GetAsync("/repositories", cancel);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        String result = await response.Content.ReadAsStringAsync();
+                        dynamic users = JsonConvert.DeserializeObject(result);
+                        foreach (dynamic user in users)
+                        {
+                            // Grabbing the data elements from the website and 
+                            // adding it to the arraylist
+                            name.Add(user.name);
+                            login.Add(user.owner.login);
+                            description.Add(user.description);
+                            imageURL = user.owner.avatar_url;
+                            byte[] imageData = tempWebClient.DownloadData(imageURL);
+                            MemoryStream stream = new MemoryStream(imageData);
+                            Image img = Image.FromStream(stream);
+
+                            //Image Processing
+                            Image.GetThumbnailImageAbort myCallback = new Image.GetThumbnailImageAbort(() => false);
+                            Bitmap myBitmap = new Bitmap(img);
+                            img = myBitmap.GetThumbnailImage(20, 20, myCallback, IntPtr.Zero);
+
+                            avatarArr.Add(img);
+                            stream.Close();
+
+                            totalAmountOfElementsInCollection++;
+                            count++;
+                            // TODO: Grab the
+
+                        }
+                        foreach (String link in response.Headers.GetValues("Link"))
+                        {
+                            nextPageLink = link;
+                        }
+                        //Update the grid
+                        updateDataGrid(grid, startIndex, endIndex);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error: " + response.StatusCode);
+                        Console.WriteLine(response.ReasonPhrase);
+                    }
+
+                    // task = new Thread(new ThreadStart(populateDataGrid(name, login, description)));
+
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // just catch the exception and cancel
+            }
+
+        }
+
+
+
 
         /// <summary>
         /// Updates the Data Grid
@@ -302,11 +375,11 @@ namespace GitHubBrowser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void SearchButton_Click(object sender, EventArgs e)
+        private async void SearchButton_Click(object sender, EventArgs e)
         {
             tokenSource = new CancellationTokenSource();
 
-            //task = Task.Run(() => searchHelper(tokenSource.Token), tokenSource.Token);
+            task = Task.Run(() => searchHelper(tokenSource.Token, searchGrid), tokenSource.Token);
 
             //TODO: deal with getting string from search box
             String searchItem = "assembly";
@@ -320,7 +393,7 @@ namespace GitHubBrowser
             searchHelper(tokenSource.Token, searchGrid);
             try
             {
-                //await task;
+                await task;
 
             } catch(OperationCanceledException)
             {
@@ -360,6 +433,10 @@ namespace GitHubBrowser
 
                 // clearing our grid
                 clearGrid(searchGrid);
+
+                // add more elements to our collection
+
+
 
                 // updating the grid based on the new indecies
                 updateDataGrid(searchGrid, startIndex, endIndex);
