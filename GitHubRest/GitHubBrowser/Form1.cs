@@ -53,8 +53,8 @@ namespace GitHubBrowser
         static int endIndex = 30;
         static int totalAmountOfElementsInCollection = 0; // keeps track of how many data elements have been grabed from the gitHub server
         static int elementsDisplayed = 0;
-        static string nextPageLink; // used to grab data elements from the server (updates as more values are needed)
         static int pageNumber = 1;
+        static string nextlink = ""; // used to grab data elements from the server (updates as more values are needed)
 
 
         public static Task task;
@@ -65,13 +65,7 @@ namespace GitHubBrowser
             tokenSource = new CancellationTokenSource();
             CheckForIllegalCrossThreadCalls = false; // turning off cross-thread exceptions (Jake)
         }
-
-       
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+     
 
         /// <summary>
         /// Creates a generic client for communicating with GitHub
@@ -220,14 +214,22 @@ namespace GitHubBrowser
             
             String imageURL = "";
             WebClient tempWebClient = new WebClient();         
-            int count = 1;
+
                 try
                 {
                     cancel.ThrowIfCancellationRequested();
-                   
+
                     using (HttpClient client = CreateClient())
                     {
                         HttpResponseMessage response = await client.GetAsync("/repositories", cancel);
+                        //Testing link Remove when done
+                        foreach (String links in response.Headers.GetValues("Link"))
+                        {
+                                nextlink = links;
+                        }
+
+                        MessageBox.Show(nextlink);
+
                         if (response.IsSuccessStatusCode)
                         {
                             String result = await response.Content.ReadAsStringAsync();
@@ -252,15 +254,11 @@ namespace GitHubBrowser
                                 avatarArr.Add(img);
                                 stream.Close();
 
+                                // keepint track of the amount of elements in the collection
                                 totalAmountOfElementsInCollection++;
-                                count++;
-                                // TODO: Grab the
 
                             }
-                            foreach (String link in response.Headers.GetValues("Link"))
-                            {
-                                nextPageLink = link; 
-                            }
+
                             //Update the grid
                             updateDataGrid(grid, startIndex, endIndex);
                         }
@@ -284,7 +282,7 @@ namespace GitHubBrowser
         /// <summary>
         /// Grabs all of the data fields (users, login, avatar, description)
         /// </summary>
-        private static async void searchHelper2(CancellationToken cancel, DataGridView grid)
+        private static async void searchHelper2(CancellationToken cancel, String searchText, DataGridView grid)
         {
 
             String imageURL = "";
@@ -296,7 +294,9 @@ namespace GitHubBrowser
 
                 using (HttpClient client = CreateClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync("/repositories", cancel);
+                    HttpResponseMessage response = await client.GetAsync("/search/respositories?q=" + searchText, cancel);
+
+                    
                     if (response.IsSuccessStatusCode)
                     {
                         String result = await response.Content.ReadAsStringAsync();
@@ -328,7 +328,7 @@ namespace GitHubBrowser
                         }
                         foreach (String link in response.Headers.GetValues("Link"))
                         {
-                            nextPageLink = link;
+                            nextlink = link;
                         }
                         //Update the grid
                         updateDataGrid(grid, startIndex, endIndex);
@@ -364,6 +364,7 @@ namespace GitHubBrowser
                 Object[] row1 = { avatarArr[i], name[i], login[i], description[i] };
                 dataGrid.Rows.Add(row1[0], row1[1], row1[2], row1[3]);
                 dataGrid.Refresh();
+                //elementsDisplayed++;
             }
 
             return;
@@ -379,22 +380,32 @@ namespace GitHubBrowser
         {
             tokenSource = new CancellationTokenSource();
 
-            task = Task.Run(() => searchHelper(tokenSource.Token, searchGrid), tokenSource.Token);
-
+            //task = Task.Run(() => searchHelper(tokenSource.Token, searchGrid), tokenSource.Token);
+            nextButton.Enabled = false;
             //TODO: deal with getting string from search box
-            String searchItem = "assembly";
+            String searchItem = SearchField.Text; 
 
             if (comboBox1.SelectedIndex == 1)
             {
                 searchHelperLanguage(tokenSource.Token, searchItem, searchGrid);
                 return;
             }
+            else if (comboBox1.SelectedIndex == 0)
+            {
+                searchHelper2(tokenSource.Token, searchItem, searchGrid);
+                return; 
+            }
+            else if (comboBox1.SelectedIndex == 2)
+            {
+                int starRating; 
+                searchItem.
+            }
             
             searchHelper(tokenSource.Token, searchGrid);
             try
             {
-                await task;
-
+                //await task;
+                nextButton.Enabled = true;
             } catch(OperationCanceledException)
             {
                 //
@@ -410,7 +421,7 @@ namespace GitHubBrowser
         private void CancelButton_Click(object sender, EventArgs e)
         {
             tokenSource.Cancel();
-           System.Windows.Forms.MessageBox.Show("cancelled"); //TODO: ROWS COLUMS
+            //System.Windows.Forms.MessageBox.Show("cancelled"); //TODO: ROWS COLUMS
             //Close();
         }
 
@@ -423,9 +434,8 @@ namespace GitHubBrowser
         private void nextButton_Click(object sender, EventArgs e)
         {
             // checks if we have enough elements in our collection
-            if((elementsDisplayed + 30) > totalAmountOfElementsInCollection)
-            {
-                collectingData(new CancellationToken());//TODO: Take out the cancellation token
+            if((endIndex + 30) > totalAmountOfElementsInCollection)
+            {             
 
                 // update the grid based on elements in our collection that already exist
                 startIndex += 30;
@@ -435,14 +445,14 @@ namespace GitHubBrowser
                 clearGrid(searchGrid);
 
                 // add more elements to our collection
-
+                collectingData(new CancellationToken(), searchGrid);
 
 
                 // updating the grid based on the new indecies
-                updateDataGrid(searchGrid, startIndex, endIndex);
+                //updateDataGrid(searchGrid, startIndex, endIndex);
 
                 // keeping track of how many elements are displayed
-                elementsDisplayed += 30;
+                //elementsDisplayed += 30;
 
             } else {
                 // update the grid based on elements in our collection that already exist
@@ -456,7 +466,7 @@ namespace GitHubBrowser
                 updateDataGrid(searchGrid, startIndex, endIndex);
 
                 // keeping track of how many elements are displayed
-                elementsDisplayed += 30;
+                //elementsDisplayed += 30;
             }
 
         }
@@ -467,7 +477,7 @@ namespace GitHubBrowser
         /// Collects the next badge of data values
         /// </summary>
         /// <param name="cancel"></param>
-        private static async void collectingData(CancellationToken cancel)
+        private static async void collectingData(CancellationToken cancel, DataGridView grid)
         {
 
             //Updates the data
@@ -477,18 +487,31 @@ namespace GitHubBrowser
                 try
                 {
                     cancel.ThrowIfCancellationRequested();
-                   
+
+                    // manipulating the link
+                    nextlink = nextlink.Replace("<https://api.github.com", "");
+                    char[] temp = nextlink.ToCharArray();
+                    string templink = "";
+                    for (int i = 0; i < temp.Length; i++)
+                    {
+                        if(temp[i] == '>')
+                            break;
+                        
+                        templink += temp[i];
+                    }
+
+                    nextlink = templink;
+
+                    MessageBox.Show(nextlink);
+
                     using (HttpClient client = CreateClient())
                     {
-                        HttpResponseMessage response = await client.GetAsync("/repositories");
+                        HttpResponseMessage response = await client.GetAsync(nextlink);
                         if (response.IsSuccessStatusCode)
                         {
                             String result = await response.Content.ReadAsStringAsync();
                             dynamic users = JsonConvert.DeserializeObject(result);
-                           
-
-                           
-                            response = await client.GetAsync("/repositories");
+                            MessageBox.Show(nextlink);
                             foreach (dynamic user in users)
                             {
                                 // Grabbing the data elements from the website and 
@@ -511,9 +534,16 @@ namespace GitHubBrowser
 
                                 totalAmountOfElementsInCollection++;
                                 count++;
-                                // TODO: Grab the
 
-                            }                         
+                            }
+                            // updating the grid based on the new indecies
+                            updateDataGrid(grid, startIndex, endIndex);
+
+                            // updating the link
+                            foreach (String links in response.Headers.GetValues("Link"))
+                            {
+                                nextlink = links;
+                            }
                         }
                         else
                         {
@@ -534,17 +564,6 @@ namespace GitHubBrowser
 
         }
 
-        /// <summary>
-        /// to find what page we would like to update to through the pagination,
-        /// we devide the elements currently displayed by a hundred, expect a trunction because of integers devision (truncation)
-        /// and we add one because of the zero based nature
-        /// </summary>
-        /// <returns></returns>
-        private int calculatePaginationPage()
-        {
-            return (elementsDisplayed / 100) + 1;
-        }
-
 
         /// <summary>
         /// 
@@ -555,20 +574,18 @@ namespace GitHubBrowser
         {
             // Checking if next has been used
             if(startIndex >= 30){
+                
                 startIndex -= 30;
                 endIndex -= 30;
+                
+                // clearing our grid
+                clearGrid(searchGrid);
 
-                // keeping track of how many elements are displayed
-                elementsDisplayed -= 30;
+                // updating the grid based on the new indecies
+                updateDataGrid(searchGrid, startIndex, endIndex);
+            
             }
-
-            // clearing our grid
-            clearGrid(searchGrid);
-
-            // updating the grid based on the new indecies
-            updateDataGrid(searchGrid, startIndex, endIndex);
-            
-            
+    
         }
 
 
@@ -641,10 +658,12 @@ namespace GitHubBrowser
                         }
                         foreach (String link in response.Headers.GetValues("Link"))
                         {
-                            nextPageLink = link;
+                            nextlink = link;
                         }
+
                         //Update the grid
                         updateDataGrid(grid, startIndex, endIndex);
+
                     }
                     else
                     {
@@ -663,5 +682,77 @@ namespace GitHubBrowser
 
         }
 
+        /// <summary>
+        /// Grabs all of the data fields (users, login, avatar, description) based on selected star ranking
+        /// </summary>
+        private static async void searchHelperStars(CancellationToken cancel, string searchLanguage, DataGridView grid)
+        {
+
+            String imageURL = "";
+            WebClient tempWebClient = new WebClient();
+            int count = 1;
+            try
+            {
+                cancel.ThrowIfCancellationRequested();
+
+                using (HttpClient client = CreateClient())
+                {
+                    HttpResponseMessage response = await client.GetAsync("/search/repositories?q=language:" + searchLanguage);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        String result = await response.Content.ReadAsStringAsync();
+                        dynamic users = JsonConvert.DeserializeObject(result);
+
+
+                        foreach (dynamic user in users.items)
+                        {
+                            // Grabbing the data elements from the website and 
+                            // adding it to the arraylist
+                            name.Add(user.name);
+                            login.Add(user.owner.login);
+                            description.Add(user.description);
+                            imageURL = user.owner.avatar_url;
+                            byte[] imageData = tempWebClient.DownloadData(imageURL);
+                            MemoryStream stream = new MemoryStream(imageData);
+                            Image img = Image.FromStream(stream);
+
+                            //Image Processing
+                            Image.GetThumbnailImageAbort myCallback = new Image.GetThumbnailImageAbort(() => false);
+                            Bitmap myBitmap = new Bitmap(img);
+                            img = myBitmap.GetThumbnailImage(20, 20, myCallback, IntPtr.Zero);
+
+                            avatarArr.Add(img);
+                            stream.Close();
+
+                            totalAmountOfElementsInCollection++;
+                            count++;
+                            // TODO: Grab the
+
+                        }
+                        foreach (String link in response.Headers.GetValues("Link"))
+                        {
+                            nextlink = link;
+                        }
+
+                        //Update the grid
+                        updateDataGrid(grid, startIndex, endIndex);
+
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error: " + response.StatusCode);
+                        Console.WriteLine(response.ReasonPhrase);
+                    }
+
+                    // task = new Thread(new ThreadStart(populateDataGrid(name, login, description)));
+
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // just catch the exception and cancel
+            }
+
+        }
     }
 }
