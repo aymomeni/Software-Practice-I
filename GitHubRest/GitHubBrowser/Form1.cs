@@ -113,14 +113,14 @@ namespace GitHubBrowser
                 nextButton.Enabled = true;
                 previousButton.Enabled = true;
 
-                task = Task.Run(() =>newSearch.searchHelper(searchItem), tokenSource.Token);
+                await newSearch.searchHelper(searchItem);
 
 
                 try
                 {
 
-                    Thread.Sleep(5000);
-                    await task; 
+                    //Thread.Sleep(5000);
+                    //await task; 
                     // updating the grid based on the new indecies
                     updateDataGrid(searchGrid, startIndex, endIndex);
                 }
@@ -185,7 +185,7 @@ namespace GitHubBrowser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void nextButton_Click(object sender, EventArgs e)
+        private async void nextButton_Click(object sender, EventArgs e)
         {
             // checks if we have enough elements in our collection
             if((endIndex + 30) > newSearch.getTotalSeachElements())
@@ -201,7 +201,7 @@ namespace GitHubBrowser
                 //Task collectionTask;
 
                 // add more elements to our collection
-                newSearch.collectingData();
+                await newSearch.collectingData();
 
                 // updating the grid based on the new indecies
                 updateDataGrid(searchGrid, startIndex, endIndex);

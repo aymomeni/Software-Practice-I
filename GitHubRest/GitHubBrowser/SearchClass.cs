@@ -131,7 +131,7 @@ namespace GitHubBrowser
         /// <summary>
         /// Grabs all of the data fields (users, login, avatar, description)
         /// </summary>
-        public async void searchHelper(String searchText)
+        public async Task searchHelper(String searchText)
         {
 
             String imageURL = "";
@@ -189,7 +189,7 @@ namespace GitHubBrowser
         /// Collects the next badge of data values
         /// </summary>
         /// <param name="cancel"></param>
-        public async void collectingData()
+        public async Task collectingData()
         {
 
             //Updates the data
