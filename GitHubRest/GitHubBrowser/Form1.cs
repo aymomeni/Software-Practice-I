@@ -76,8 +76,9 @@ namespace GitHubBrowser
         }
 
 
+
         /// <summary>
-        /// 
+        /// Helper method that updates the grid
         /// </summary>
         /// <param name="dataGrid"></param>
         /// <param name="startIndex"></param>
