@@ -43,7 +43,7 @@ namespace GitHubBrowser
         private const string PUBLIC_REPO = "repo1";
 
         // using a cancellation token
-        private CancellationTokenSource tokenSource;
+        private CancellationTokenSource cancelToken;
 
         // Holds the different data fields
         private ArrayList name = new ArrayList(), login = new ArrayList(), description = new ArrayList();
@@ -131,7 +131,7 @@ namespace GitHubBrowser
         /// <summary>
         /// Grabs all of the data fields (users, login, avatar, description)
         /// </summary>
-        public async Task searchHelper(String searchText)
+        public async Task searchHelper(String searchText, CancellationToken cancel)
         {
 
             String imageURL = "";
@@ -148,6 +148,9 @@ namespace GitHubBrowser
                         dynamic users = JsonConvert.DeserializeObject(result);
                         foreach (dynamic user in users.items)
                         {
+                            // Checking for cancellation
+                            cancel.ThrowIfCancellationRequested();
+
                             // Grabbing the data elements from the website and 
                             // adding it to the arraylist
                             name.Add(user.name);
@@ -261,7 +264,7 @@ namespace GitHubBrowser
         /// <summary>
         /// Grabs all of the data fields (users, login, avatar, description)
         /// </summary>
-        public async void searchHelperLanguage(string searchLanguage)
+        public async Task searchHelperLanguage(string searchLanguage, CancellationToken cancel)
         {
 
             String imageURL = "";
@@ -278,6 +281,10 @@ namespace GitHubBrowser
 
                         foreach (dynamic user in users.items)
                         {
+
+                            // Checking for cancellation
+                            cancel.ThrowIfCancellationRequested();
+
                             // Grabbing the data elements from the website and 
                             // adding it to the arraylist
                             name.Add(user.name);
@@ -317,7 +324,7 @@ namespace GitHubBrowser
         /// <summary>
         /// Grabs all of the data fields (users, login, avatar, description) based on selected star ranking
         /// </summary>
-        public async void searchHelperStars(string searchLanguage)
+        public async Task searchHelperStars(string searchLanguage, CancellationToken cancel)
         {
 
             String imageURL = "";
@@ -334,6 +341,10 @@ namespace GitHubBrowser
 
                         foreach (dynamic user in users.items)
                         {
+
+                            // Checking for cancellation
+                            cancel.ThrowIfCancellationRequested();
+
                             // Grabbing the data elements from the website and 
                             // adding it to the arraylist
                             name.Add(user.name);

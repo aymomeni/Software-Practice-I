@@ -1,6 +1,6 @@
 ﻿namespace GitHubBrowser
 {
-    partial class form1
+    partial class GITBrowserForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GITBrowserForm));
             this.SearchField = new System.Windows.Forms.TextBox();
             this.SearchButton = new System.Windows.Forms.Button();
             this.CancelButton = new System.Windows.Forms.Button();
@@ -43,6 +44,7 @@
             this.previousButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.newSearchButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.searchGrid)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -66,7 +68,7 @@
             // 
             // CancelButton
             // 
-            this.CancelButton.Location = new System.Drawing.Point(436, 33);
+            this.CancelButton.Location = new System.Drawing.Point(551, 33);
             this.CancelButton.Name = "CancelButton";
             this.CancelButton.Size = new System.Drawing.Size(109, 25);
             this.CancelButton.TabIndex = 2;
@@ -104,6 +106,7 @@
             this.searchGrid.RowTemplate.ReadOnly = true;
             this.searchGrid.Size = new System.Drawing.Size(963, 644);
             this.searchGrid.TabIndex = 4;
+            this.searchGrid.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.searchGrid_CellContentClick);
             // 
             // Avatar
             // 
@@ -187,11 +190,22 @@
             this.label2.TabIndex = 9;
             this.label2.Text = "Prev 30";
             // 
-            // form1
+            // newSearchButton
+            // 
+            this.newSearchButton.Location = new System.Drawing.Point(436, 33);
+            this.newSearchButton.Name = "newSearchButton";
+            this.newSearchButton.Size = new System.Drawing.Size(109, 25);
+            this.newSearchButton.TabIndex = 10;
+            this.newSearchButton.Text = "New Search";
+            this.newSearchButton.UseVisualStyleBackColor = true;
+            this.newSearchButton.Click += new System.EventHandler(this.newSearchButton_Click);
+            // 
+            // GITBrowserForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(987, 787);
+            this.Controls.Add(this.newSearchButton);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.previousButton);
@@ -202,7 +216,9 @@
             this.Controls.Add(this.SearchButton);
             this.Controls.Add(this.SearchField);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.Text = "Git Search Application";
             ((System.ComponentModel.ISupportInitialize)(this.searchGrid)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
@@ -228,6 +244,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         public System.Windows.Forms.DataGridView searchGrid;
+        private System.Windows.Forms.Button newSearchButton;
     }
 }
 

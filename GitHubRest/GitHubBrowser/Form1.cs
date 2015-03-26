@@ -31,28 +31,38 @@ namespace GitHubBrowser
     /// A partial class responsible to create a GitHub Server access GUI that
     /// displays various search functions using the server and Json
     /// </summary>
-    public partial class form1 : Form
+    public partial class GITBrowserForm : Form
     {
 
         // using a cancellation token
-        private CancellationTokenSource tokenSource;
+        private CancellationTokenSource cancelToken;
 
         // used to keep track of positions of what next and prev
         static private int startIndex = 0;
         static private int endIndex = 30;
         static private int totalAmountOfElementsInCollection = 0; // keeps track of how many data elements have been grabed from the gitHub server
 
-        //New 
+        // Instiance of the Search Class that is used to collect 
+        // data that is that utilized for the display of the form
         private SearchClass newSearch;
 
         private static Task task; 
 
-        public form1()
+
+        /// <summary>
+        /// Initiates the Form
+        /// </summary>
+        public GITBrowserForm()
         {
             InitializeComponent();
-            tokenSource = new CancellationTokenSource();
+            cancelToken = new CancellationTokenSource();
             CheckForIllegalCrossThreadCalls = false; // turning off cross-thread exceptions (Jake)
             comboBox1.SelectedIndex = 0; // creating a initial element that is shown in the combo box
+            searchGrid.AllowUserToAddRows = false;
+            
+            // Disabling next and previous buttons since they don't serve any functionality
+            nextButton.Enabled = false;
+            previousButton.Enabled = false;
         }
     
 
@@ -60,7 +70,21 @@ namespace GitHubBrowser
         /// <summary>
         /// Updates the Data Grid
         /// </summary>
-        private void updateDataGrid(DataGridView dataGrid, int startIndex, int endIndex)
+        private async Task updateDataGrid(DataGridView dataGrid, int startIndex, int endIndex, CancellationToken cancel)
+        {
+            await updateDataGridHelper(dataGrid, startIndex, endIndex, cancel);
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dataGrid"></param>
+        /// <param name="startIndex"></param>
+        /// <param name="endIndex"></param>
+        /// <param name="cancel"></param>
+        /// <returns></returns>
+        private async Task updateDataGridHelper(DataGridView dataGrid, int startIndex, int endIndex, CancellationToken cancel)
         {
             // Holds the different data fields
             ArrayList name = new ArrayList(), login = new ArrayList(), description = new ArrayList();
@@ -72,8 +96,11 @@ namespace GitHubBrowser
             avatarArr = newSearch.getAvatarArr();
 
             // adding elements to the grid
-            for(int i = startIndex; i < endIndex; i++)
+            for (int i = startIndex; i < endIndex; i++)
             {
+                // Checking for cancellation
+                cancel.ThrowIfCancellationRequested();
+
                 Object[] row1 = { avatarArr[i], name[i], login[i], description[i] };
                 dataGrid.Rows.Add(row1[0], row1[1], row1[2], row1[3]);
                 dataGrid.Refresh();
@@ -103,80 +130,88 @@ namespace GitHubBrowser
             if (searchItem == "")
             {
                 SearchButton.Enabled = true;
-                MessageBox.Show("Please select a search item and enter a search token");
-            }
-            
-            if (comboBox1.SelectedIndex == 0)
-            {
-                
-                
-                nextButton.Enabled = true;
-                previousButton.Enabled = true;
-
-                await newSearch.searchHelper(searchItem);
-
-
-                try
-                {
-
-                    //Thread.Sleep(5000);
-                    //await task; 
-                    // updating the grid based on the new indecies
-                    updateDataGrid(searchGrid, startIndex, endIndex);
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
-
-
+                MessageBox.Show("Please select a search item and enter select the appropriate search criteria.");
                 return; 
-            } 
-            
-            else if (comboBox1.SelectedIndex == 1)
-            {
-                newSearch.searchHelperLanguage(searchItem);
-
-                nextButton.Enabled = true;
-                previousButton.Enabled = true;
-
-                // updating the grid based on the new indecies
-                updateDataGrid(searchGrid, startIndex, endIndex);
-
-                return;
             }
             
-            else if (comboBox1.SelectedIndex == 2)
+            //NEW Cancellation Exception
+            try
             {
-                int starRating = 0;
-            //checking that searchItem is an int
-                if (int.TryParse(searchItem, out starRating))
-            {
-                searchItem = "" + starRating;
-                newSearch.searchHelperStars(searchItem);
-               
-                nextButton.Enabled = true;
-                previousButton.Enabled = true;
+                if (comboBox1.SelectedIndex == 0)
+                {
 
-                // updating the grid based on the new indecies
-                updateDataGrid(searchGrid, startIndex, endIndex);
+                    await newSearch.searchHelper(searchItem, cancelToken.Token);
 
-                return;
+                    // NEW: Deactivate the search button after the search is run
+                    SearchButton.Enabled = false;
+
+                    nextButton.Enabled = true;
+                    previousButton.Enabled = false;
+
+                    // updating the grid based on the new indecies
+                    await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
+
+                    return;
+                }
+
+                else if (comboBox1.SelectedIndex == 1)
+                {
+                    await newSearch.searchHelperLanguage(searchItem, cancelToken.Token);
+                    
+                    // NEW: Deactivate the search button after the search is run
+                    SearchButton.Enabled = false;
+
+                    nextButton.Enabled = true;
+                    previousButton.Enabled = false;
+
+                    // updating the grid based on the new indecies
+                    await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
+
+                    return;
+                }
+
+                else if (comboBox1.SelectedIndex == 2)
+                {
+                    int starRating = 0;
+                    //checking that searchItem is an int
+                    if (int.TryParse(searchItem, out starRating))
+                    {
+                        searchItem = "" + starRating;
+                        await newSearch.searchHelperStars(searchItem, cancelToken.Token);
+
+                        // NEW: Deactivate the search button after the search is run
+                        SearchButton.Enabled = false;
+
+                        nextButton.Enabled = true;
+                        previousButton.Enabled = false;
+
+                        // updating the grid based on the new indecies
+                        await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
+
+                        return;
+                    }
+
+                }
+
             }
-
+            catch (OperationCanceledException)
+            {
+                MessageBox.Show("Search has been Cancelled.");
             }
            
          }
 
 
         /// <summary>
-        /// 
+        /// Method that throws a cancellation exception when the cancel button is clicked
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void CancelButton_Click(object sender, EventArgs e)
         {
-            tokenSource.Cancel();
+            SearchField.Clear();
+            cancelToken.Cancel();
+            cancelToken = new CancellationTokenSource();
         }
 
 
@@ -198,24 +233,28 @@ namespace GitHubBrowser
                 // clearing our grid
                 clearGrid(searchGrid);
 
-                //Task collectionTask;
+                //enableling previous Button
+                previousButton.Enabled = true;
 
                 // add more elements to our collection
                 await newSearch.collectingData();
 
                 // updating the grid based on the new indecies
-                updateDataGrid(searchGrid, startIndex, endIndex);
+                await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
 
             } else {
                 // update the grid based on elements in our collection that already exist
                 startIndex += 30;
                 endIndex += 30;
 
+                //enableling previous Button
+                previousButton.Enabled = true;
+
                 // clearing our grid
                 clearGrid(searchGrid);
                 
                 // updating the grid based on the new indecies
-                updateDataGrid(searchGrid, startIndex, endIndex);
+                await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
 
             }
 
@@ -234,13 +273,17 @@ namespace GitHubBrowser
             if(startIndex >= 30){
                 
                 startIndex -= 30;
+
+                //if startIndex is 0 we disable the previous Button
+                previousButton.Enabled = false;
+
                 endIndex -= 30;
                 
                 // clearing our grid
                 clearGrid(searchGrid);
 
                 // updating the grid based on the new indecies
-                updateDataGrid(searchGrid, startIndex, endIndex);
+                updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
             
             }
     
@@ -255,6 +298,33 @@ namespace GitHubBrowser
             grid.Rows.Clear();
 
         }
+
+        /// <summary>
+        /// Responsible for handling messages when 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void searchGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+
+        /// <summary>
+        /// Creates a new search
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void newSearchButton_Click(object sender, EventArgs e)
+        {
+            // New
+            SearchField.Text = "";
+            SearchButton.Enabled = true;
+            newSearch = new SearchClass();
+            clearGrid(searchGrid);
+
+        }
+
 
     }
 
