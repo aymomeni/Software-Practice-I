@@ -180,8 +180,8 @@ namespace GitHubBrowser
                     }
                     else
                     {
-                        Console.WriteLine("Error: " + response.StatusCode);
-                        Console.WriteLine(response.ReasonPhrase);
+                        MessageBox.Show("Error: " + response.StatusCode + "\n" + response.ReasonPhrase);
+
                     }
                 }
 
@@ -213,7 +213,6 @@ namespace GitHubBrowser
 
                 nextlink = templink;
 
-                MessageBox.Show(nextlink);
                 using (HttpClient client = CreateClient())
                 {
                     HttpResponseMessage response = await client.GetAsync(nextlink);
@@ -254,8 +253,7 @@ namespace GitHubBrowser
                     }
                     else
                     {
-                        Console.WriteLine("Error: " + response.StatusCode);
-                        Console.WriteLine(response.ReasonPhrase);
+                        MessageBox.Show("Error: " + response.StatusCode + "\n" + response.ReasonPhrase);
                     }
             }
         }
@@ -315,8 +313,7 @@ namespace GitHubBrowser
                     }
                     else
                     {
-                        Console.WriteLine("Error: " + response.StatusCode);
-                        Console.WriteLine(response.ReasonPhrase);
+                        MessageBox.Show("Error: " + response.StatusCode + "\n" + response.ReasonPhrase);
                     }
             }
         }
@@ -324,7 +321,7 @@ namespace GitHubBrowser
         /// <summary>
         /// Grabs all of the data fields (users, login, avatar, description) based on selected star ranking
         /// </summary>
-        public async Task searchHelperStars(string searchLanguage, CancellationToken cancel)
+        public async Task searchHelperStars(string searchStars, CancellationToken cancel)
         {
 
             String imageURL = "";
@@ -332,12 +329,11 @@ namespace GitHubBrowser
 
                 using (HttpClient client = CreateClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync("/search/repositories?q=stars:" + searchLanguage);
+                    HttpResponseMessage response = await client.GetAsync("/search/repositories?q=stars:" + searchStars);
                     if (response.IsSuccessStatusCode)
                     {
                         String result = await response.Content.ReadAsStringAsync();
                         dynamic users = JsonConvert.DeserializeObject(result);
-
 
                         foreach (dynamic user in users.items)
                         {
@@ -371,17 +367,84 @@ namespace GitHubBrowser
                             nextlink = link;
                         }
 
-
                     }
                     else
                     {
-                        Console.WriteLine("Error: " + response.StatusCode);
-                        Console.WriteLine(response.ReasonPhrase);
+                        MessageBox.Show("Error: " + response.StatusCode + "\n" + response.ReasonPhrase);
                     }
             
                 }
         
         }
+        /// <summary>
+        /// Grabs the languages used in the repository and the bytes
+        /// </summary>
+        public async Task<ArrayList> dataGridSearchRepository(string repositoryName, string loginName, CancellationToken cancel)
+        {
+            ArrayList languagesAndBytes = new ArrayList(); 
+            WebClient tempWebClient = new WebClient();
+
+            using (HttpClient client = CreateClient())
+            {
+                HttpResponseMessage response = await client.GetAsync("/repos/"+loginName+"/"+repositoryName+"/languages");
+                if (response.IsSuccessStatusCode)
+                {
+                    String result = await response.Content.ReadAsStringAsync();
+                    dynamic users = JsonConvert.DeserializeObject(result);
+
+
+                    foreach (dynamic user in users)
+                    {
+
+                        // Checking for cancellation
+                        cancel.ThrowIfCancellationRequested();
+
+                        //Get data
+                        languagesAndBytes.Add("" + user); 
+
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Error: " + response.StatusCode + "\n" + response.ReasonPhrase);
+                }
+
+            }
+
+            return languagesAndBytes;
+
+        }
+
+
+        /// <summary>
+        /// Grabs the email and name of user
+        /// </summary>
+        public async Task<ArrayList> dataGridSearchlogin(string loginName, CancellationToken cancel)
+        {
+            ArrayList nameAndEmail = new ArrayList();
+            WebClient tempWebClient = new WebClient();
+
+            using (HttpClient client = CreateClient())
+            {
+                HttpResponseMessage response = await client.GetAsync("/users/"+loginName);
+                if (response.IsSuccessStatusCode)
+                {
+                    String result = await response.Content.ReadAsStringAsync();
+                    dynamic user = JsonConvert.DeserializeObject(result);
+
+                    nameAndEmail.Add("Name: " + user.name + "\n" + "Email: " + user.email); 
+                }
+                else
+                {
+                    MessageBox.Show("Error: " + response.StatusCode + "\n" + response.ReasonPhrase);
+                }
+
+            }
+
+            return nameAndEmail;
+
+        }
+
     
     }
 

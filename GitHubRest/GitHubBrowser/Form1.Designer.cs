@@ -106,7 +106,7 @@
             this.searchGrid.RowTemplate.ReadOnly = true;
             this.searchGrid.Size = new System.Drawing.Size(963, 644);
             this.searchGrid.TabIndex = 4;
-            this.searchGrid.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.searchGrid_CellContentClick);
+            this.searchGrid.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.searchGrid_CellClick);
             // 
             // Avatar
             // 
@@ -218,6 +218,7 @@
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.Name = "GITBrowserForm";
             this.Text = "Git Search Application";
             ((System.ComponentModel.ISupportInitialize)(this.searchGrid)).EndInit();
             this.menuStrip1.ResumeLayout(false);

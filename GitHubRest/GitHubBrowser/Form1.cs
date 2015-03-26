@@ -43,7 +43,7 @@ namespace GitHubBrowser
         static private int totalAmountOfElementsInCollection = 0; // keeps track of how many data elements have been grabed from the gitHub server
 
         // Instiance of the Search Class that is used to collect 
-        // data that is that utilized for the display of the form
+        //data that is that utilized for the display of the form
         private SearchClass newSearch;
 
         private static Task task; 
@@ -59,6 +59,7 @@ namespace GitHubBrowser
             CheckForIllegalCrossThreadCalls = false; // turning off cross-thread exceptions (Jake)
             comboBox1.SelectedIndex = 0; // creating a initial element that is shown in the combo box
             searchGrid.AllowUserToAddRows = false;
+
             
             // Disabling next and previous buttons since they don't serve any functionality
             nextButton.Enabled = false;
@@ -112,7 +113,7 @@ namespace GitHubBrowser
 
 
         /// <summary>
-        /// 
+        ///  Calls the search for the current search parameters
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -148,10 +149,16 @@ namespace GitHubBrowser
 
                     nextButton.Enabled = true;
                     previousButton.Enabled = false;
+                    try
+                    {
+                        // updating the grid based on the new indecies
+                        await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
 
-                    // updating the grid based on the new indecies
-                    await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
-
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("Search returned 0 results."); 
+                    }
                     return;
                 }
 
@@ -164,10 +171,15 @@ namespace GitHubBrowser
 
                     nextButton.Enabled = true;
                     previousButton.Enabled = false;
-
-                    // updating the grid based on the new indecies
-                    await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
-
+                    try
+                    {
+                        // updating the grid based on the new indecies
+                        await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("Search returned 0 results."); 
+                    }
                     return;
                 }
 
@@ -185,10 +197,15 @@ namespace GitHubBrowser
 
                         nextButton.Enabled = true;
                         previousButton.Enabled = false;
-
-                        // updating the grid based on the new indecies
-                        await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
-
+                        try
+                        {
+                            // updating the grid based on the new indecies
+                            await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
+                        }
+                        catch (Exception)
+                        {
+                            MessageBox.Show("Search returned 0 results.");
+                        }
                         return;
                     }
 
@@ -217,7 +234,7 @@ namespace GitHubBrowser
 
 
         /// <summary>
-        /// 
+        /// Performs the data collection of elements when next is clicked. 
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -268,7 +285,7 @@ namespace GitHubBrowser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void previousButton_Click(object sender, EventArgs e)
+        private async void previousButton_Click(object sender, EventArgs e)
         {
             // Checking if next has been used
             if(startIndex >= 30){
@@ -284,7 +301,7 @@ namespace GitHubBrowser
                 clearGrid(searchGrid);
 
                 // updating the grid based on the new indecies
-                updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
+                await updateDataGrid(searchGrid, startIndex, endIndex, cancelToken.Token);
             
             }
     
@@ -297,16 +314,6 @@ namespace GitHubBrowser
         private static void clearGrid(DataGridView grid)
         {
             grid.Rows.Clear();
-
-        }
-
-        /// <summary>
-        /// Responsible for handling messages when 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void searchGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
 
         }
 
@@ -326,6 +333,56 @@ namespace GitHubBrowser
 
         }
 
+
+        /// <summary>
+        /// Calls the method to get data for cells
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void searchGrid_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+             searchGrid_CellClickHelper(cancelToken.Token, e);
+
+        }
+
+
+
+        /// <summary>
+        /// Gets the specific data for the cell: login returns email and name; repository returns language and bytes
+        /// </summary>
+        /// <param name="cancel"></param>
+        /// <param name="e"></param>
+        private async void searchGrid_CellClickHelper(CancellationToken cancel, DataGridViewCellEventArgs e)
+        {
+            ArrayList response = new ArrayList();
+            if (e.ColumnIndex == 1 || e.ColumnIndex == 2)
+            {
+                // gets the user's language tokens
+                DataGridViewRow row = searchGrid.Rows[e.RowIndex];
+                string repositoryName = row.Cells[1].Value.ToString();
+                string loginName = row.Cells[2].Value.ToString();
+                if (e.ColumnIndex == 1)
+                {
+                    response = await newSearch.dataGridSearchRepository(repositoryName, loginName, cancel);
+                    String languagesBytes = "Languages:\n";
+                    foreach (string lang in response)
+                    {
+                        languagesBytes += lang + "\n"; 
+                    }
+                    MessageBox.Show(languagesBytes); 
+                }
+                else
+                {
+                    //add the dataGridSearchUser
+                    response = await newSearch.dataGridSearchlogin(loginName, cancel);
+                    MessageBox.Show(response[0].ToString());
+                }
+                
+            
+            }
+
+             return;
+        }
 
     }
 
